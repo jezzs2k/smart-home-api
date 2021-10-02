@@ -1,0 +1,22 @@
+import { Injectable } from '@nestjs/common';
+import * as config from 'config';
+import { Configuration } from './configurations.enum';
+
+const { get } = config;
+
+@Injectable()
+export class ConfigurationsService {
+  static connectionString: string =
+    process.env[Configuration.MONGO_URI] ||
+    'mongodb+srv://admin:admin@cluster0.igh9e.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
+
+  private environmentHosting: string = process.env.NODE_ENV || 'development';
+
+  get(name: string): string {
+    return process.env[name] || get(name);
+  }
+
+  get isDevelopment(): boolean {
+    return this.environmentHosting === 'development';
+  }
+}
