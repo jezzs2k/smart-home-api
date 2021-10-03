@@ -5,19 +5,23 @@ import { AppService } from './app.service';
 import { Configuration } from './shared/configurations/configurations.enum';
 import { ConfigurationsService } from './shared/configurations/configurations.service';
 import { SharedModule } from './shared/shared.module';
+import { UserModule } from './user/user.module';
+import { FirebaseService } from './firebase/firebase.service';
 
 @Module({
   imports: [
     SharedModule,
     MongooseModule.forRoot(ConfigurationsService.connectionString),
+    UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, FirebaseService],
 })
 export class AppModule {
   static host: string;
   static port: number | string;
   static isDev: boolean;
+  static configFirebase: any;
 
   constructor(private readonly _configurationsService: ConfigurationsService) {
     AppModule.port = AppModule.normalizePort(8080);

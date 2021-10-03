@@ -21,15 +21,15 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@automapper/classes": "^6.2.1",
-    "@automapper/core": "^6.2.1",
-    "@automapper/nestjs": "^6.2.1",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/mongoose": "^9.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/swagger": "^5.1.0",
+    "automapper-ts": "^1.9.0",
     "config": "^3.3.6",
+    "firebase-admin": "^9.12.0",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.8",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
@@ -38,7 +38,6 @@
     "typegoose": "^5.9.1"
   },
   "devDependencies": {
-    "@automapper/types": "^6.2.1",
     "@nestjs/cli": "^8.0.0",
     "@nestjs/schematics": "^8.0.0",
     "@nestjs/testing": "^8.0.0",
