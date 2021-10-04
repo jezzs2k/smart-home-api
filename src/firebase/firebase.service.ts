@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 
-const ServiceAccount = require('/home/micheal/Documents/code/smart-home-api/htcdt-iot-firebase-adminsdk-lvhlo-fbbe730e62.json');
+const ServiceAccount = require('../../../htcdt-iot-firebase-adminsdk-lvhlo-fbbe730e62.json');
 
 @Injectable()
 export class FirebaseService {
@@ -19,19 +19,26 @@ export class FirebaseService {
 
     const db = admin.database();
 
-    //ref theo id cua tung thiet bi esp
-    const ref = db.ref('test/float');
-
-    ref.set(11000, (e) => {
-      console.log('e', e);
-    });
+    //ref with id esp
+    const ref = db.ref();
 
     ref.on('value', (snapshot) => {
-      console.log(snapshot.val());
-    });
+      const data = snapshot.val();
 
-    ref.once('value', function (snapshot) {
-      console.log(snapshot.val());
+      console.log(data);
+
+      if (data?.getuser) {
+        for (const key in data?.getuser) {
+          if (data?.getuser[key] === 'true') {
+            console.log('Tao co roi nhe buy');
+          } else {
+            setTimeout(() => {
+              db.ref('/user/' + key).set('23123123123123213123');
+              db.ref('/getuser/' + key).set('true');
+            }, 1000);
+          }
+        }
+      }
     });
   }
 }
