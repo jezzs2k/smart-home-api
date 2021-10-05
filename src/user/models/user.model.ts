@@ -1,3 +1,4 @@
+import { UserRole } from './user-role.enum';
 import { ModelType, prop } from 'typegoose';
 
 import { BaseModel, schemaOptions } from 'src/shared/base.model';
@@ -17,11 +18,28 @@ export class User extends BaseModel<User> {
   })
   password: string;
 
+  @prop({
+    required: [true, 'Email is required'],
+    unique: true,
+  })
+  email: string;
+
   @prop()
   firstName?: string;
 
   @prop()
   lastName?: string;
+
+  @prop({
+    enum: UserRole,
+    default: UserRole.Admin,
+  })
+  role: UserRole;
+
+  @prop({
+    default: false,
+  })
+  isActive?: boolean;
 
   get fullName(): string {
     return `${this.firstName} ${this.lastName}`;

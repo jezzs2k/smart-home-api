@@ -21,10 +21,10 @@ export class MapperService {
       .forSourceMember(
         'fullname',
         (otps) =>
-          otps.sourceObject.username + 'cc' + otps.sourceObject.username,
+          otps.sourceObject.firstName + 'cc' + otps.sourceObject.lastName,
       )
-      .forSourceMember('_id', (opts) => opts.ignore());
-    //   .forSourceMember('password', (otps) => otps.ignore());
+      .forSourceMember('_id', (opts) => opts.ignore())
+      .forSourceMember('password', (otps) => otps.ignore());
 
     // config
     //   .createMap('Todo', 'TodoVm')

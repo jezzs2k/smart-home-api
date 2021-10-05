@@ -1,6 +1,13 @@
 import { ModelType, InstanceType } from 'typegoose';
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  forwardRef,
+  Inject,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { compare, hash } from 'bcryptjs';
 
 import { BaseService } from './../shared/base.service';
 import { User } from './models/user.model';
@@ -9,6 +16,8 @@ import { UserVm } from './models/user-vm.model';
 import { LoginVm } from './models/login-vm.model';
 import { LoginResponseVm } from './models/login-response-cm.model';
 import { MapperService } from 'src/shared/mapper/mapper.service';
+import { JwtPayload } from 'src/shared/auth/jwt.payload';
+import { AuthService } from 'src/shared/auth/auth.service';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -16,27 +25,27 @@ export class UserService extends BaseService<User> {
     @InjectModel(User.modelName)
     private readonly _userModal: ModelType<InstanceType<User>>,
     private readonly _mapperService: MapperService,
+    @Inject(forwardRef(() => AuthService)) readonly _authService: AuthService,
   ) {
     super();
     this._mapper = _mapperService.mapper;
     this._model = _userModal;
   }
 
-  async register(register: RegisterVm): Promise<User> {
-    const { username, password, firstName, lastName } = register;
+  async register(register: RegisterVm): Promise<UserVm> {
+    const { username, password, email } = register;
 
     const newUser = new this._model();
     newUser.username = username;
-    newUser.firstName = firstName;
-    newUser.lastName = lastName;
+    newUser.email = email;
 
     const salt = 10;
-    // newUser.password = await hash(password, salt);
+    newUser.password = await hash(password, salt);
 
     try {
       const result = await this.create(newUser);
 
-      return result.toJSON() as User;
+      return (await this.map<UserVm>(result.toJSON())) as UserVm;
     } catch (e) {
       //MongoError
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -48,32 +57,35 @@ export class UserService extends BaseService<User> {
 
     const user = await this.findOne({ username });
 
-    console.log('user', user);
-
     if (!user) {
       throw new HttpException('Invalid creadentials', HttpStatus.BAD_REQUEST);
     }
 
-    // const isMatch = await compare(password, user.password);
+    const isMatch = await compare(password, user.password);
 
-    // if (!isMatch) {
-    //     throw new HttpException('Invalid creadentials', HttpStatus.BAD_REQUEST);
-    // }
+    if (!isMatch) {
+      throw new HttpException('Invalid creadentials', HttpStatus.BAD_REQUEST);
+    }
 
-    // const payload: JwtPayload = {
-    //     username: user.username,
-    // };
+    const payload: JwtPayload = {
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    };
 
-    // const token = await this._authService.signPayload(payload);//user.toJSON()
-    // this.mapper.createMap(User, UserVm);
+    const token = await this._authService.signPayload(payload);
 
     const userVm: UserVm = await this.map<UserVm>(user.toJSON());
 
-    console.log('userVm', userVm);
-
     return {
-      token: '',
+      token,
       user: userVm,
     };
+  }
+
+  async getUser({ username }: { username: string }): Promise<User> {
+    const user = await this.findOne({ username });
+
+    return user;
   }
 }

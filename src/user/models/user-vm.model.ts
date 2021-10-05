@@ -7,6 +7,9 @@ export class UserVm {
   username: string;
 
   @ApiProperty()
+  email: string;
+
+  @ApiProperty()
   firstName?: string;
 
   @ApiProperty()
