@@ -7,12 +7,14 @@ import { ConfigurationsService } from './shared/configurations/configurations.se
 import { SharedModule } from './shared/shared.module';
 import { UserModule } from './user/user.module';
 import { FirebaseService } from './firebase/firebase.service';
+import { DevicesModule } from './devices/devices.module';
 
 @Module({
   imports: [
     SharedModule,
     MongooseModule.forRoot(ConfigurationsService.connectionString),
     UserModule,
+    DevicesModule,
   ],
   controllers: [AppController],
   providers: [AppService, FirebaseService],

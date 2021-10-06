@@ -1,23 +1,7 @@
 import { UserRole } from './user-role.enum';
-import { ModelType, prop } from 'typegoose';
+import { ModelType, prop, Ref } from 'typegoose';
 
 import { BaseModel, schemaOptions } from 'src/shared/base.model';
-
-export class DeiveceEsp extends BaseModel<DeiveceEsp> {
-  @prop()
-  deviceName: string;
-
-  @prop({})
-  deviceType?: string;
-
-  @prop({})
-  deviceId: string;
-
-  @prop({
-    default: false,
-  })
-  isConnected: boolean;
-}
 
 export class User extends BaseModel<User> {
   @prop({
@@ -57,8 +41,8 @@ export class User extends BaseModel<User> {
   })
   isActive?: boolean;
 
-  @prop({})
-  devicesEsp?: DeiveceEsp[];
+  // @prop({ ref: Deivece })
+  // devicesEsp?: Ref<Deivece>[];
 
   get fullName(): string {
     return `${this.firstName} ${this.lastName}`;

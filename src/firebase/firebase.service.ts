@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
+import { UserService } from 'src/user/user.service';
 
 const ServiceAccount = require('../../../htcdt-iot-firebase-adminsdk-lvhlo-fbbe730e62.json');
 
@@ -7,7 +8,7 @@ const ServiceAccount = require('../../../htcdt-iot-firebase-adminsdk-lvhlo-fbbe7
 export class FirebaseService {
   private readonly serviceAccount = ServiceAccount;
 
-  constructor() {
+  constructor(private readonly _userService: UserService) {
     this.configurationFirebase();
   }
 
@@ -29,16 +30,28 @@ export class FirebaseService {
 
       if (data?.getuser) {
         for (const key in data?.getuser) {
-          if (data?.getuser[key] === 'true') {
-            console.log('Tao co roi nhe buy');
+          if (data[key]?.isActive === 'true') {
+            console.log('ok true');
           } else {
-            setTimeout(() => {
-              db.ref('/user/' + key).set('23123123123123213123');
-              db.ref('/getuser/' + key).set('true');
-            }, 1000);
+            db.ref(key + '/setUser').set('true');
+            db.ref(key + '/isActive').set('true');
           }
+          // if (data?.getuser[key] === 'true') {
+          //   console.log('Tao co roi nhe buy');
+          // } else {
+          //   setTimeout(() => {
+          //     db.ref('/user/' + key).set('23123123123123213123');
+          //     db.ref('/getuser/' + key).set('true');
+          //   }, 1000);
+          // }
         }
       }
+    });
+  }
+
+  private async handleGetUserByDeviceId(deviceId: string) {
+    return new Promise((resolve, reject) => {
+      // const user
     });
   }
 }

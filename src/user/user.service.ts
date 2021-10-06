@@ -10,7 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { compare, hash } from 'bcryptjs';
 
 import { BaseService } from './../shared/base.service';
-import { User, DeiveceEsp } from './models/user.model';
+import { User } from './models/user.model';
 import { RegisterVm } from './models/register-vm.model';
 import { UserVm } from './models/user-vm.model';
 import { LoginVm } from './models/login-vm.model';
@@ -103,22 +103,22 @@ export class UserService extends BaseService<User> {
     const lastname = updateUser?.lastname;
     const deviceEsp = updateUser?.devicesEsp;
 
-    let newDevice: DeiveceEsp;
+    // let newDevice: DeiveceEsp;
 
-    if (deviceEsp) {
-      newDevice = new DeiveceEsp();
+    // if (deviceEsp) {
+    //   newDevice = new DeiveceEsp();
 
-      const deviceName = deviceEsp?.deviceName;
-      const deviceType = deviceEsp?.deviceType;
-      const deviceId = deviceEsp.deviceEspId;
-      const isConnected = !!deviceEsp.isConnected;
+    //   const deviceName = deviceEsp?.deviceName;
+    //   const deviceType = deviceEsp?.deviceType;
+    //   const deviceId = deviceEsp.deviceEspId;
+    //   const isConnected = !!deviceEsp.isConnected;
 
-      newDevice.deviceId = deviceId;
-      newDevice.isConnected = isConnected;
+    //   newDevice.deviceId = deviceId;
+    //   newDevice.isConnected = isConnected;
 
-      if (deviceType) newDevice.deviceType = deviceType;
-      if (deviceName) newDevice.deviceName = deviceName;
-    }
+    //   if (deviceType) newDevice.deviceType = deviceType;
+    //   if (deviceName) newDevice.deviceName = deviceName;
+    // }
 
     try {
       const user = await this.findById(userId);
@@ -126,31 +126,31 @@ export class UserService extends BaseService<User> {
 
       if (lastname) user.lastName = lastname;
 
-      if (newDevice) {
-        if (user.devicesEsp?.length > 0) {
-          const deviceExist = user.devicesEsp.find(
-            (item) => item.deviceId === newDevice.deviceId,
-          );
+      // if (newDevice) {
+      //   if (user.devicesEsp?.length > 0) {
+      //     const deviceExist = user.devicesEsp.find(
+      //       (item) => item.deviceId === newDevice.deviceId,
+      //     );
 
-          if (!deviceExist) {
-            user.devicesEsp = [...user.devicesEsp, newDevice];
-          } else {
-            user.devicesEsp = user.devicesEsp.map((item) => {
-              if (item.deviceId === deviceExist.deviceId) {
-                return newDevice;
-              } else {
-                return item;
-              }
-            });
-          }
-        } else {
-          user.devicesEsp = [newDevice];
-        }
-      }
+      //     if (!deviceExist) {
+      //       user.devicesEsp = [...user.devicesEsp, newDevice];
+      //     } else {
+      //       user.devicesEsp = user.devicesEsp.map((item) => {
+      //         if (item.deviceId === deviceExist.deviceId) {
+      //           return newDevice;
+      //         } else {
+      //           return item;
+      //         }
+      //       });
+      //     }
+      //   } else {
+      //     user.devicesEsp = [newDevice];
+      //   }
+      // }
 
       const savedUser = await user.save();
 
-      return this.map<UserVm>(savedUser.toJSON());
+      return this.map<UserVm>(user.toJSON());
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -163,24 +163,24 @@ export class UserService extends BaseService<User> {
         throw new HttpException("Can't not found user!", HttpStatus.NOT_FOUND);
       }
 
-      const devices = user.devicesEsp;
+      // const devices = user.devicesEsp;
 
-      const deviceFound = devices.find((item) => item.deviceId === deviceId);
+      // const deviceFound = devices.find((item) => item.deviceId === deviceId);
 
-      if (!deviceFound) {
-        throw new HttpException(
-          "Can't not found device with id: " + deviceId,
-          HttpStatus.NOT_FOUND,
-        );
-      }
+      // if (!deviceFound) {
+      //   throw new HttpException(
+      //     "Can't not found device with id: " + deviceId,
+      //     HttpStatus.NOT_FOUND,
+      //   );
+      // }
 
-      const newDevices = devices.filter((item) => item.deviceId !== deviceId);
+      // const newDevices = devices.filter((item) => item.deviceId !== deviceId);
 
-      user.devicesEsp = newDevices;
+      // user.devicesEsp = newDevices;
 
-      const userSaved = await user.save();
+      // const userSaved = await user.save();
 
-      return this.map<UserVm>(userSaved.toJSON());
+      return this.map<UserVm>(user.toJSON());
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -2,19 +2,16 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseModelVm } from 'src/shared/base.model';
 
-export class UserVm extends BaseModelVm {
+export class DeviceVm extends BaseModelVm {
   @ApiProperty()
-  username: string;
+  deviceName?: string;
 
   @ApiProperty()
-  email: string;
+  deviceId: string;
 
   @ApiProperty()
-  firstName?: string;
+  deviceType?: string;
 
   @ApiProperty()
-  lastName?: string;
-
-  @ApiProperty()
-  fullName?: string;
+  isConnected?: boolean;
 }

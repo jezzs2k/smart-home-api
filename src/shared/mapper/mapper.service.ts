@@ -26,9 +26,9 @@ export class MapperService {
       .forSourceMember('_id', (opts) => opts.ignore())
       .forSourceMember('password', (otps) => otps.ignore());
 
-    // config
-    //   .createMap('Todo', 'TodoVm')
-    //   .forSourceMember('_id', (opts) => opts.ignore());
+    config
+      .createMap('Devices', 'DevicesVm')
+      .forSourceMember('_id', (opts) => opts.ignore());
     // config
     //   .createMap('Todo[]', 'TodoVm[]')
     //   .forSourceMember('_id', (opts) => opts.ignore());
