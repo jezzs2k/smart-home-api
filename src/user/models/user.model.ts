@@ -3,6 +3,22 @@ import { ModelType, prop } from 'typegoose';
 
 import { BaseModel, schemaOptions } from 'src/shared/base.model';
 
+export class DeiveceEsp extends BaseModel<DeiveceEsp> {
+  @prop()
+  deviceName: string;
+
+  @prop({})
+  deviceType?: string;
+
+  @prop({})
+  deviceId: string;
+
+  @prop({
+    default: false,
+  })
+  isConnected: boolean;
+}
+
 export class User extends BaseModel<User> {
   @prop({
     required: [true, 'Username is required'],
@@ -40,6 +56,9 @@ export class User extends BaseModel<User> {
     default: false,
   })
   isActive?: boolean;
+
+  @prop({})
+  devicesEsp?: DeiveceEsp[];
 
   get fullName(): string {
     return `${this.firstName} ${this.lastName}`;

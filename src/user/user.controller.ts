@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -26,6 +28,8 @@ import { UserRole } from './models/user-role.enum';
 import { UserVm } from './models/user-vm.model';
 import { User } from './models/user.model';
 import { UserService } from './user.service';
+import { DeleteDeviceVm, GetUserVm, UpdateUserVm } from './models/user.dto';
+import { GetUser } from 'src/shared/decorators/getUser.decorator';
 
 @Controller('user')
 @ApiTags(User.modelName)
@@ -85,7 +89,80 @@ export class UserController {
   @ApiResponse({ status: HttpStatus.CREATED, type: User })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
   @ApiOperation(GetOperationId(User.modelName, 'Get user'))
-  async getUser() {
-    return await this._userService.getUser({ username: 'hieuvudz1' });
+  async getUser(@GetUser() userPayload: User): Promise<UserVm> {
+    const userId = userPayload.id;
+
+    if (!userId) {
+      throw new HttpException('User id must provide !', HttpStatus.BAD_REQUEST);
+    }
+
+    const user = await this._userService.getUser(userId);
+
+    return user;
+  }
+
+  @Put('/')
+  @ApiBearerAuth()
+  @Roles(UserRole.Admin)
+  @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
+  @ApiResponse({ status: HttpStatus.CREATED, type: User })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
+  @ApiOperation(GetOperationId(User.modelName, 'Update user'))
+  async updateUser(
+    @Body() updateUserVm: UpdateUserVm,
+    @GetUser() userPayload: User,
+  ): Promise<UserVm> {
+    const userId = userPayload.id;
+
+    try {
+      const user = await this._userService.findById(userId);
+
+      if (!user) {
+        throw new HttpException("Can't not find user!", HttpStatus.NOT_FOUND);
+      }
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    if (!updateUserVm) {
+      throw new HttpException(
+        'Params id must provide !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const user = await this._userService.updateUser(updateUserVm, userId);
+
+    return user;
+  }
+
+  @Delete('/device')
+  @ApiBearerAuth()
+  @Roles(UserRole.Admin)
+  @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
+  @ApiResponse({ status: HttpStatus.CREATED, type: User })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
+  @ApiOperation(GetOperationId(User.modelName, 'Delete device'))
+  async deleteDevice(
+    @Body() deleteDeviceVm: DeleteDeviceVm,
+    @GetUser() userPayload: User,
+  ): Promise<UserVm> {
+    const userId = userPayload.id;
+    const deviceId = deleteDeviceVm?.deviceEspId;
+
+    if (!deviceId) {
+      throw new HttpException(
+        'Device id must provide !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      const user = this._userService.deleteDevice(deviceId, userId);
+
+      return user;
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
