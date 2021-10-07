@@ -3,6 +3,7 @@ import { DevicesService } from './devices.service';
 import { DevicesController } from './devices.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DeviceEsp } from './models/device.model';
+import { UserModule } from '../user/user.module';
 
 @Module({
   providers: [DevicesService],
@@ -11,6 +12,7 @@ import { DeviceEsp } from './models/device.model';
     MongooseModule.forFeature([
       { name: DeviceEsp.modelName, schema: DeviceEsp.model.schema },
     ]),
+    UserModule,
   ],
   exports: [DevicesService],
 })

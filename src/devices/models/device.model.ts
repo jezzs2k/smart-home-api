@@ -16,7 +16,7 @@ export class DeviceEsp extends BaseModel<DeviceEsp> {
   @prop({
     ref: () => User,
   })
-  user: Ref<User>;
+  createdBy: Ref<User>;
 
   @prop({
     default: false,

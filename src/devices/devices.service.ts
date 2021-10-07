@@ -1,11 +1,19 @@
 import { BaseService } from './../shared/base.service';
-import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  HttpStatus,
+  forwardRef,
+  Inject,
+} from '@nestjs/common';
 import { DeviceEsp } from './models/device.model';
 import { MapperService } from 'src/shared/mapper/mapper.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { ModelType, InstanceType } from 'typegoose';
 import { DeviceVm } from './models/device-vm.model';
 import { CreateDeviceDto } from './dto/createDevice.dto';
+import { User } from '../user/models/user.model';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class DevicesService extends BaseService<DeviceEsp> {
@@ -13,6 +21,8 @@ export class DevicesService extends BaseService<DeviceEsp> {
     private readonly _mapperDevice: MapperService,
     @InjectModel(DeviceEsp.modelName)
     private readonly _modelDevice: ModelType<InstanceType<DeviceEsp>>,
+    @Inject(forwardRef(() => UserService))
+    private readonly _userService: UserService,
   ) {
     super();
 
@@ -20,7 +30,10 @@ export class DevicesService extends BaseService<DeviceEsp> {
     this._model = _modelDevice;
   }
 
-  async createDevice(createDeviceDto: CreateDeviceDto): Promise<DeviceVm> {
+  async createDevice(
+    createDeviceDto: CreateDeviceDto,
+    user: User,
+  ): Promise<DeviceVm> {
     const { deviceId, deviceName } = createDeviceDto;
 
     const deviceType = createDeviceDto?.deviceType;
@@ -31,6 +44,7 @@ export class DevicesService extends BaseService<DeviceEsp> {
     newDeviceEsp.deviceId = deviceId;
     newDeviceEsp.deviceName = deviceName;
     newDeviceEsp.isConnected = isConnected;
+    newDeviceEsp.createdBy = user;
 
     if (deviceType) newDeviceEsp.deviceType = deviceType;
 
@@ -45,7 +59,12 @@ export class DevicesService extends BaseService<DeviceEsp> {
 
   async getDevice(deviceId: string): Promise<DeviceVm> {
     try {
-      const device = await this.findOne({ deviceId });
+      const device = await this.findOneWithPopulate(
+        { deviceId },
+        'createdBy',
+        null,
+        User.modelName,
+      );
 
       if (!device) {
         throw new HttpException(

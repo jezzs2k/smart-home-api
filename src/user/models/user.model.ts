@@ -2,6 +2,7 @@ import { UserRole } from './user-role.enum';
 import { ModelType, prop, Ref } from 'typegoose';
 
 import { BaseModel, schemaOptions } from 'src/shared/base.model';
+import { DeviceEsp } from '../../devices/models/device.model';
 
 export class User extends BaseModel<User> {
   @prop({
@@ -41,8 +42,8 @@ export class User extends BaseModel<User> {
   })
   isActive?: boolean;
 
-  // @prop({ ref: Deivece })
-  // devicesEsp?: Ref<Deivece>[];
+  @prop({ refPath: 'createdBy' })
+  devicesEsp: Ref<DeviceEsp>[];
 
   get fullName(): string {
     return `${this.firstName} ${this.lastName}`;

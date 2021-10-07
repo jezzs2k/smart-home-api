@@ -19,6 +19,7 @@ import { MapperService } from 'src/shared/mapper/mapper.service';
 import { JwtPayload } from 'src/shared/auth/jwt.payload';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { GetUserVm, UpdateUserVm } from './models/user.dto';
+import { DeviceEsp } from '../devices/models/device.model';
 
 @Injectable()
 export class UserService extends BaseService<User> {
@@ -86,7 +87,9 @@ export class UserService extends BaseService<User> {
 
   async getUser(userId: string): Promise<UserVm> {
     try {
-      const user = await this.findOne({ _id: userId });
+      const user = await this._model
+        .findOne({ _id: userId })
+        .populate('devicesEsp', 'deviceId deviceName', DeviceEsp.modelName);
 
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);

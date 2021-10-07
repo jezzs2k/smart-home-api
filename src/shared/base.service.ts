@@ -1,6 +1,6 @@
 import 'automapper-ts/dist/automapper';
 
-import { InsertManyOptions, Types } from 'mongoose';
+import { InsertManyOptions, LeanDocument, Types } from 'mongoose';
 import { Typegoose, ModelType, InstanceType } from 'typegoose';
 
 export class BaseService<T extends Typegoose> {
@@ -16,7 +16,7 @@ export class BaseService<T extends Typegoose> {
   }
 
   async map<K>(
-    object: Partial<InstanceType<T>> | Partial<InstanceType<T>>[],
+    object: LeanDocument<InstanceType<T>> | LeanDocument<InstanceType<T>>[],
     isArray: boolean = false,
     sourceKey?: string,
     destrinationKey?: string,
@@ -36,7 +36,19 @@ export class BaseService<T extends Typegoose> {
   }
 
   async findOne(filter = {}): Promise<InstanceType<T>> {
-    return this._model.findOne(filter).exec();
+    return await this._model.findOne(filter).exec();
+  }
+
+  async findOneWithPopulate(
+    filter = {},
+    pathPopulate: string,
+    selete?: string,
+    modelNamePopulate?: string,
+  ): Promise<InstanceType<T>> {
+    return await this._model
+      .findOne(filter)
+      .populate(pathPopulate, selete, modelNamePopulate)
+      .exec();
   }
 
   async findById(id: string): Promise<InstanceType<T>> {
