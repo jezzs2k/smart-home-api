@@ -17,7 +17,7 @@ export class MapperService {
 
   private static configure(config: AutoMapperJs.IConfiguration): void {
     config
-      .createMap('User', 'UserVm')
+      .createMap('UserV2', 'UserV2Vm')
       .forSourceMember(
         'fullname',
         (otps) =>
@@ -27,7 +27,7 @@ export class MapperService {
       .forSourceMember('password', (otps) => otps.ignore());
 
     config
-      .createMap('DeviceEsp', 'DeviceEspVm')
+      .createMap('DeviceEspV2', 'DeviceEspV2Vm')
       .forSourceMember('_id', (opts) => opts.ignore());
     // config
     //   .createMap('Todo[]', 'TodoVm[]')

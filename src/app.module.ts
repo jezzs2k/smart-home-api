@@ -8,16 +8,17 @@ import { SharedModule } from './shared/shared.module';
 import { UserModule } from './user/user.module';
 import { FirebaseService } from './firebase/firebase.service';
 import { DevicesModule } from './devices/devices.module';
+import { TypegooseModule } from 'nestjs-typegoose';
 
 @Module({
   imports: [
     SharedModule,
-    MongooseModule.forRoot(ConfigurationsService.connectionString),
+    TypegooseModule.forRoot(ConfigurationsService.connectionString),
     UserModule,
     DevicesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, FirebaseService],
+  providers: [AppService],
 })
 export class AppModule {
   static host: string;
