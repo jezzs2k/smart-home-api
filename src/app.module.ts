@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypegooseModule } from 'nestjs-typegoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Configuration } from './shared/configurations/configurations.enum';
@@ -8,7 +8,6 @@ import { SharedModule } from './shared/shared.module';
 import { UserModule } from './user/user.module';
 import { FirebaseService } from './firebase/firebase.service';
 import { DevicesModule } from './devices/devices.module';
-import { TypegooseModule } from 'nestjs-typegoose';
 
 @Module({
   imports: [
@@ -18,7 +17,7 @@ import { TypegooseModule } from 'nestjs-typegoose';
     DevicesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, FirebaseService],
 })
 export class AppModule {
   static host: string;
@@ -27,8 +26,11 @@ export class AppModule {
   static configFirebase: any;
 
   constructor(private readonly _configurationsService: ConfigurationsService) {
-    AppModule.port = AppModule.normalizePort(8080);
-    AppModule.host = 'http://localhost';
+    AppModule.port = AppModule.normalizePort(
+      _configurationsService.get(Configuration.PORT),
+    );
+    AppModule.host =
+      _configurationsService.get(Configuration.HOST) || 'http://localhost';
     AppModule.isDev = _configurationsService.isDevelopment;
   }
 

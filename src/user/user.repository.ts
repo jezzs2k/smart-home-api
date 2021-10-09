@@ -5,15 +5,9 @@ import { UserV2 } from './models/user.model.v2';
 
 @Injectable()
 export class UserRepository extends BaseRepository<UserV2> {
-  private _model: ModelType<UserV2>;
-
   constructor(
     @InjectModel(UserV2) private readonly userModel: ModelType<UserV2>,
   ) {
     super(userModel);
-  }
-
-  get modelName(): string {
-    return this._model.modelName;
   }
 }

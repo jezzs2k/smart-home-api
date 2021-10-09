@@ -40,8 +40,8 @@ import {
 import { Document } from 'mongoose';
 import { UserV2 } from './models/user.model.v2';
 
-@Controller('user')
-@ApiTags('User')
+@Controller('users')
+@ApiTags('Users')
 @ApiBearerAuth()
 export class UserControllerV2 {
   constructor(

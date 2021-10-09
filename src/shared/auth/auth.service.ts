@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { SignOptions, sign } from 'jsonwebtoken';
 import { UserV2 } from '../../user/models/user.model.v2';
 import { UserRepository } from '../../user/user.repository';
+import { Configuration } from '../configurations/configurations.enum';
 import { ConfigurationsService } from '../configurations/configurations.service';
 import { JwtPayload } from './jwt.payload';
 
@@ -16,11 +17,11 @@ export class AuthService {
     private readonly _configurationService: ConfigurationsService,
   ) {
     this.jwtOption = { expiresIn: '12h' };
-    // this.jwtKey = _configurationService.get(Configuration.JWT_KEY);
+    this.jwtKey = _configurationService.get(Configuration.JWT_KEY);
   }
 
   async signPayload(payload: JwtPayload): Promise<string> {
-    return sign(payload, 'MYsercretKey2021', this.jwtOption);
+    return sign(payload, this.jwtKey, this.jwtOption);
   }
 
   async validatePayload(payload: JwtPayload): Promise<UserV2> {
