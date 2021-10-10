@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { SignOptions, sign } from 'jsonwebtoken';
-import { UserV2 } from '../../user/models/user.model.v2';
+import { User } from '../../user/models/user.model';
 import { UserRepository } from '../../user/user.repository';
 import { Configuration } from '../configurations/configurations.enum';
 import { ConfigurationsService } from '../configurations/configurations.service';
@@ -24,7 +24,7 @@ export class AuthService {
     return sign(payload, this.jwtKey, this.jwtOption);
   }
 
-  async validatePayload(payload: JwtPayload): Promise<UserV2> {
+  async validatePayload(payload: JwtPayload): Promise<User> {
     return this._userRepository.findOne({
       username: payload.username.toLocaleLowerCase(),
     });

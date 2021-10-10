@@ -1,10 +1,12 @@
 import { UserRole } from './user-role.enum';
-import { ModelType, prop, Ref } from 'typegoose';
+import { prop, Ref } from '@typegoose/typegoose';
 
-import { BaseModel, schemaOptions } from 'src/shared/base.model';
+import { BaseModel } from '../../shared/base.model';
+import { useMongoosePlugin } from '../../shared/decorators/use-mongoose-plugins.decorator';
 import { DeviceEsp } from '../../devices/models/device.model';
 
-export class User extends BaseModel<User> {
+@useMongoosePlugin()
+export class User extends BaseModel {
   @prop({
     required: [true, 'Username is required'],
     minlength: [6, 'Must be at least 6 characters'],
@@ -42,18 +44,6 @@ export class User extends BaseModel<User> {
   })
   isActive?: boolean;
 
-  @prop({ refPath: 'createdBy' })
+  @prop({ ref: () => DeviceEsp })
   devicesEsp: Ref<DeviceEsp>[];
-
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
-  }
-
-  static get model(): ModelType<User> {
-    return new User().getModelForClass(User, { schemaOptions });
-  }
-
-  static get modelName(): string {
-    return this.model.modelName;
-  }
 }

@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from 'nestjs-typegoose';
 import { BaseRepository, ModelType } from '../shared/base.respository';
-import { UserV2 } from './models/user.model.v2';
+import { User } from './models/user.model';
 
 @Injectable()
-export class UserRepository extends BaseRepository<UserV2> {
-  constructor(
-    @InjectModel(UserV2) private readonly userModel: ModelType<UserV2>,
-  ) {
+export class UserRepository extends BaseRepository<User> {
+  constructor(@InjectModel(User) private readonly userModel: ModelType<User>) {
     super(userModel);
   }
 }

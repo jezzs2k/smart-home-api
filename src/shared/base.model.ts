@@ -1,20 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SchemaOptions } from 'mongoose';
-import { Typegoose, prop, pre } from 'typegoose';
+import { modelOptions, prop, Severity } from '@typegoose/typegoose';
 
-@pre('findOneAndUpdate', function (next) {
-  this._update.updatedAt = new Date(Date.now());
-
-  next();
+@modelOptions({
+  options: { allowMixed: Severity.ALLOW },
+  schemaOptions: {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      getters: true,
+    },
+  },
 })
-export class BaseModel<T> extends Typegoose {
-  @prop({ default: Date.now() })
-  createdAt?: Date;
-
-  @prop({ default: Date.now() })
-  updatedAt?: Date;
-
-  id?: string;
+export abstract class BaseModel {
+  @prop()
+  createdAt: Date;
+  @prop()
+  updatedAt: Date;
+  id: string; // getter as string
 }
 
 export class BaseModelVm {
@@ -33,11 +35,3 @@ export class BaseModelVm {
   })
   id?: string;
 }
-
-export const schemaOptions: SchemaOptions = {
-  toJSON: {
-    virtuals: true,
-    getters: true,
-  },
-  timestamps: true,
-};

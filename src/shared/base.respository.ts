@@ -13,19 +13,19 @@ import {
   QueryOptions as MongooseQueryOptions,
 } from 'mongoose';
 import { MongoError } from 'mongodb';
-import { BaseModelV2 } from './base.model.v2';
+import { BaseModel } from './base.model';
 
-export type EnforceDocumentType<TModel extends BaseModelV2> = EnforceDocument<
+export type EnforceDocumentType<TModel extends BaseModel> = EnforceDocument<
   DocumentType<TModel>,
   Record<string, unknown>,
   {}
 >;
 
-export type QueryList<TModel extends BaseModelV2> = QueryWithHelpers<
+export type QueryList<TModel extends BaseModel> = QueryWithHelpers<
   Array<EnforceDocumentType<TModel>>,
   EnforceDocumentType<TModel>
 >;
-export type QueryItem<TModel extends BaseModelV2> = QueryWithHelpers<
+export type QueryItem<TModel extends BaseModel> = QueryWithHelpers<
   EnforceDocumentType<TModel>,
   EnforceDocumentType<TModel>
 >;
@@ -35,11 +35,11 @@ interface QueryOptions {
   autopopulate?: boolean;
 }
 
-export type ModelType<TModel extends BaseModelV2> = ReturnModelType<
+export type ModelType<TModel extends BaseModel> = ReturnModelType<
   AnyParamConstructor<TModel>
 >;
 
-export abstract class BaseRepository<TModel extends BaseModelV2> {
+export abstract class BaseRepository<TModel extends BaseModel> {
   protected model: ModelType<TModel>;
 
   protected constructor(model: ModelType<TModel>) {

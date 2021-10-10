@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
-import { UserServiceV2 } from '../user/user.service.v2';
+import { UserService } from '../user/user.service';
 
 const ServiceAccount = require('../../../htcdt-iot-firebase-adminsdk-lvhlo-fbbe730e62.json');
 
@@ -8,7 +8,7 @@ const ServiceAccount = require('../../../htcdt-iot-firebase-adminsdk-lvhlo-fbbe7
 export class FirebaseService {
   private readonly serviceAccount = ServiceAccount;
 
-  constructor(private readonly _userServiceV2: UserServiceV2) {
+  constructor(private readonly _userService: UserService) {
     this.configurationFirebase();
   }
 
