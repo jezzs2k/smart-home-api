@@ -7,13 +7,12 @@ const { get } = config;
 @Injectable()
 export class ConfigurationsService {
   static connectionString: string =
-    process.env[Configuration.MONGO_URI] ||
-    'mongodb+srv://admin:admin@cluster0.igh9e.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
+    process.env[Configuration.MONGO_URI] || config.get(Configuration.MONGO_URI);
 
   private environmentHosting: string = process.env.NODE_ENV || 'development';
 
   get(name: string): string {
-    return process.env[name] || get(name);
+    return process.env[name] || config.get(name);
   }
 
   get isDevelopment(): boolean {

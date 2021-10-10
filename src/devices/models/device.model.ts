@@ -1,9 +1,11 @@
-import { ModelType, prop, Ref } from 'typegoose';
+import { User } from './../../user/models/user.model';
+import { prop, Ref } from '@typegoose/typegoose';
 
-import { BaseModel, schemaOptions } from 'src/shared/base.model';
-import { User } from 'src/user/models/user.model';
+import { BaseModel } from '../../shared/base.model';
+import { useMongoosePlugin } from '../../shared/decorators/use-mongoose-plugins.decorator';
 
-export class DeviceEsp extends BaseModel<DeviceEsp> {
+@useMongoosePlugin()
+export class DeviceEsp extends BaseModel {
   @prop()
   deviceName: string;
 
@@ -15,6 +17,7 @@ export class DeviceEsp extends BaseModel<DeviceEsp> {
 
   @prop({
     ref: () => User,
+    autopopulate: true,
   })
   createdBy: Ref<User>;
 
@@ -22,12 +25,4 @@ export class DeviceEsp extends BaseModel<DeviceEsp> {
     default: false,
   })
   isConnected: boolean;
-
-  static get model(): ModelType<DeviceEsp> {
-    return new DeviceEsp().getModelForClass(User, { schemaOptions });
-  }
-
-  static get modelName(): string {
-    return this.model.modelName;
-  }
 }

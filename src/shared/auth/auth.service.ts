@@ -1,8 +1,8 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { SignOptions, sign } from 'jsonwebtoken';
-import { User } from 'src/user/models/user.model';
-import { UserService } from 'src/user/user.service';
-import { InstanceType } from 'typegoose';
+import { User } from '../../user/models/user.model';
+import { UserRepository } from '../../user/user.repository';
+import { Configuration } from '../configurations/configurations.enum';
 import { ConfigurationsService } from '../configurations/configurations.service';
 import { JwtPayload } from './jwt.payload';
 
@@ -12,20 +12,20 @@ export class AuthService {
   private readonly jwtKey: string;
 
   constructor(
-    @Inject(forwardRef(() => UserService))
-    private readonly _userService: UserService,
+    @Inject(forwardRef(() => UserRepository))
+    private readonly _userRepository: UserRepository,
     private readonly _configurationService: ConfigurationsService,
   ) {
     this.jwtOption = { expiresIn: '12h' };
-    // this.jwtKey = _configurationService.get(Configuration.JWT_KEY);
+    this.jwtKey = _configurationService.get(Configuration.JWT_KEY);
   }
 
   async signPayload(payload: JwtPayload): Promise<string> {
-    return sign(payload, 'MYsercretKey2021', this.jwtOption);
+    return sign(payload, this.jwtKey, this.jwtOption);
   }
 
-  async validatePayload(payload: JwtPayload): Promise<InstanceType<User>> {
-    return this._userService.findOne({
+  async validatePayload(payload: JwtPayload): Promise<User> {
+    return this._userRepository.findOne({
       username: payload.username.toLocaleLowerCase(),
     });
   }

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypegooseModule } from 'nestjs-typegoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Configuration } from './shared/configurations/configurations.enum';
@@ -12,7 +12,7 @@ import { DevicesModule } from './devices/devices.module';
 @Module({
   imports: [
     SharedModule,
-    MongooseModule.forRoot(ConfigurationsService.connectionString),
+    TypegooseModule.forRoot(ConfigurationsService.connectionString),
     UserModule,
     DevicesModule,
   ],
@@ -26,8 +26,11 @@ export class AppModule {
   static configFirebase: any;
 
   constructor(private readonly _configurationsService: ConfigurationsService) {
-    AppModule.port = AppModule.normalizePort(8080);
-    AppModule.host = 'http://localhost';
+    AppModule.port = AppModule.normalizePort(
+      _configurationsService.get(Configuration.PORT),
+    );
+    AppModule.host =
+      _configurationsService.get(Configuration.HOST) || 'http://localhost';
     AppModule.isDev = _configurationsService.isDevelopment;
   }
 

@@ -1,19 +1,15 @@
 import { Module } from '@nestjs/common';
+import { UserModule } from '../user/user.module';
+import { TypegooseModule } from 'nestjs-typegoose';
 import { DevicesService } from './devices.service';
 import { DevicesController } from './devices.controller';
-import { MongooseModule } from '@nestjs/mongoose';
+import { DeviceRepository } from './devices.repository';
 import { DeviceEsp } from './models/device.model';
-import { UserModule } from '../user/user.module';
 
 @Module({
-  providers: [DevicesService],
+  providers: [DevicesService, DeviceRepository],
   controllers: [DevicesController],
-  imports: [
-    MongooseModule.forFeature([
-      { name: DeviceEsp.modelName, schema: DeviceEsp.model.schema },
-    ]),
-    UserModule,
-  ],
-  exports: [DevicesService],
+  imports: [TypegooseModule.forFeature([DeviceEsp]), UserModule],
+  exports: [DevicesService, DeviceRepository],
 })
 export class DevicesModule {}

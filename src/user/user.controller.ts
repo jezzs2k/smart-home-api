@@ -5,6 +5,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Param,
   Post,
   Put,
   UseGuards,
@@ -27,19 +28,28 @@ import { RegisterVm } from './models/register-vm.model';
 import { UserRole } from './models/user-role.enum';
 import { UserVm } from './models/user-vm.model';
 import { User } from './models/user.model';
-import { UserService } from './user.service';
-import { DeleteDeviceVm, GetUserVm, UpdateUserVm } from './models/user.dto';
+import { UpdateUserVm } from './models/user.dto';
 import { GetUser } from 'src/shared/decorators/getUser.decorator';
+import { UserService } from './user.service';
+import { UserRepository } from './user.repository';
+import {
+  BeAnObject,
+  IObjectWithTypegooseFunction,
+} from '@typegoose/typegoose/lib/types';
+import { Document } from 'mongoose';
 
-@Controller('user')
-@ApiTags(User.modelName)
+@Controller('users')
+@ApiTags('Users')
+@ApiBearerAuth()
 export class UserController {
-  constructor(private readonly _userService: UserService) {}
+  constructor(
+    private readonly _userService: UserService,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   @Post('login')
   @ApiResponse({ status: HttpStatus.CREATED, type: LoginResponseVm })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
-  @ApiOperation(GetOperationId(User.modelName, 'Login'))
   async login(@Body() loginVm: LoginVm): Promise<LoginResponseVm> {
     const fields = Object.keys(loginVm);
 
@@ -55,7 +65,6 @@ export class UserController {
   @Post('register')
   @ApiResponse({ status: HttpStatus.CREATED, type: UserVm })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
-  @ApiOperation(GetOperationId(User.modelName, 'Register'))
   async register(@Body() registerVm: RegisterVm): Promise<UserVm> {
     const fields = Object.keys(registerVm);
 
@@ -67,10 +76,12 @@ export class UserController {
 
     const { username } = registerVm;
 
-    let exist;
+    let exist: Document<any, BeAnObject, any> &
+      User &
+      IObjectWithTypegooseFunction & { _id: any };
 
     try {
-      exist = await this._userService.findOne({ username });
+      exist = await this.userRepository.findOne({ username });
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -83,31 +94,20 @@ export class UserController {
   }
 
   @Get('/')
-  @ApiBearerAuth()
   @Roles(UserRole.Admin)
   @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
-  @ApiResponse({ status: HttpStatus.CREATED, type: User })
+  @ApiResponse({ status: HttpStatus.OK, type: User })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
-  @ApiOperation(GetOperationId(User.modelName, 'Get user'))
-  async getUser(@GetUser() userPayload: User): Promise<UserVm> {
-    const userId = userPayload.id;
-
-    if (!userId) {
-      throw new HttpException('User id must provide !', HttpStatus.BAD_REQUEST);
-    }
-
-    const user = await this._userService.getUser(userId);
-
-    return user;
+  async getUser(@GetUser() user: User): Promise<any> {
+    return await this._userService.getUser(user.id);
   }
 
   @Put('/')
   @ApiBearerAuth()
   @Roles(UserRole.Admin)
   @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
-  @ApiResponse({ status: HttpStatus.CREATED, type: User })
+  @ApiResponse({ status: HttpStatus.OK, type: User })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
-  @ApiOperation(GetOperationId(User.modelName, 'Update user'))
   async updateUser(
     @Body() updateUserVm: UpdateUserVm,
     @GetUser() userPayload: User,
@@ -115,7 +115,7 @@ export class UserController {
     const userId = userPayload.id;
 
     try {
-      const user = await this._userService.findById(userId);
+      const user = await this.userRepository.findById(userId);
 
       if (!user) {
         throw new HttpException("Can't not find user!", HttpStatus.NOT_FOUND);
@@ -134,35 +134,5 @@ export class UserController {
     const user = await this._userService.updateUser(updateUserVm, userId);
 
     return user;
-  }
-
-  @Delete('/device')
-  @ApiBearerAuth()
-  @Roles(UserRole.Admin)
-  @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
-  @ApiResponse({ status: HttpStatus.CREATED, type: User })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
-  @ApiOperation(GetOperationId(User.modelName, 'Delete device'))
-  async deleteDevice(
-    @Body() deleteDeviceVm: DeleteDeviceVm,
-    @GetUser() userPayload: User,
-  ): Promise<UserVm> {
-    const userId = userPayload.id;
-    const deviceId = deleteDeviceVm?.deviceEspId;
-
-    if (!deviceId) {
-      throw new HttpException(
-        'Device id must provide !',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    try {
-      const user = this._userService.deleteDevice(deviceId, userId);
-
-      return user;
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
 }

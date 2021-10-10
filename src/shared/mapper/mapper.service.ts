@@ -18,23 +18,19 @@ export class MapperService {
   private static configure(config: AutoMapperJs.IConfiguration): void {
     config
       .createMap('User', 'UserVm')
-      .forSourceMember(
-        'fullname',
-        (otps) =>
-          otps.sourceObject.firstName + 'cc' + otps.sourceObject.lastName,
-      )
+      // .forSourceMember(
+      //   'fullname',
+      //   (otps) =>
+      //     otps.sourceObject.firstName + 'cc' + otps.sourceObject.lastName,
+      // )
       .forSourceMember('_id', (opts) => opts.ignore())
       .forSourceMember('password', (otps) => otps.ignore());
 
     config
       .createMap('DeviceEsp', 'DeviceEspVm')
       .forSourceMember('_id', (opts) => opts.ignore());
-    // config
-    //   .createMap('Todo[]', 'TodoVm[]')
-    //   .forSourceMember('_id', (opts) => opts.ignore());
-
-    // config
-    //   .createMap('News[]', 'NewsVm[]')
-    //   .forSourceMember('_id', (otps) => otps.ignore());
+    config
+      .createMap('DeviceEsp[]', 'DeviceEspVm[]')
+      .forSourceMember('_id', (opts) => opts.ignore());
   }
 }

@@ -1,4 +1,5 @@
-import { BaseService } from './../shared/base.service';
+import { DeviceUpdateEspVm } from './models/device.dto';
+import { User } from 'src/user/models/user.model';
 import {
   HttpException,
   Injectable,
@@ -6,28 +7,28 @@ import {
   forwardRef,
   Inject,
 } from '@nestjs/common';
-import { DeviceEsp } from './models/device.model';
 import { MapperService } from 'src/shared/mapper/mapper.service';
-import { InjectModel } from '@nestjs/mongoose';
-import { ModelType, InstanceType } from 'typegoose';
 import { DeviceVm } from './models/device-vm.model';
 import { CreateDeviceDto } from './dto/createDevice.dto';
-import { User } from '../user/models/user.model';
 import { UserService } from '../user/user.service';
+import { BaseService } from '../shared/base.service';
+import { DeviceEsp } from './models/device.model';
+import { DeviceRepository } from './devices.repository';
+import { UserRepository } from '../user/user.repository';
 
 @Injectable()
 export class DevicesService extends BaseService<DeviceEsp> {
   constructor(
     private readonly _mapperDevice: MapperService,
-    @InjectModel(DeviceEsp.modelName)
-    private readonly _modelDevice: ModelType<InstanceType<DeviceEsp>>,
+    private readonly deviceRepository: DeviceRepository,
+    private readonly userRepository: UserRepository,
     @Inject(forwardRef(() => UserService))
     private readonly _userService: UserService,
   ) {
     super();
 
+    this._repository = deviceRepository;
     this._mapper = _mapperDevice.mapper;
-    this._model = _modelDevice;
   }
 
   async createDevice(
@@ -39,7 +40,7 @@ export class DevicesService extends BaseService<DeviceEsp> {
     const deviceType = createDeviceDto?.deviceType;
     const isConnected = !!createDeviceDto?.isConnected;
 
-    const newDeviceEsp = new DeviceEsp();
+    const newDeviceEsp = this._repository.createModel();
 
     newDeviceEsp.deviceId = deviceId;
     newDeviceEsp.deviceName = deviceName;
@@ -49,9 +50,22 @@ export class DevicesService extends BaseService<DeviceEsp> {
     if (deviceType) newDeviceEsp.deviceType = deviceType;
 
     try {
-      const result = await this._model.create(newDeviceEsp);
+      const userFound = await this.userRepository.findById(user.id);
 
-      return this.map<DeviceVm>(result.toJSON());
+      if (!userFound) {
+        throw new HttpException("User dosen't found", HttpStatus.NOT_FOUND);
+      }
+
+      userFound.devicesEsp.push(
+        this.deviceRepository.toObjectId(newDeviceEsp.id),
+      );
+
+      const values = await Promise.all([
+        this._repository.create(newDeviceEsp),
+        this.userRepository.updateById(user.id, userFound),
+      ]);
+
+      return this.map<DeviceVm>(values[0].toJSON());
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -59,12 +73,7 @@ export class DevicesService extends BaseService<DeviceEsp> {
 
   async getDevice(deviceId: string): Promise<DeviceVm> {
     try {
-      const device = await this.findOneWithPopulate(
-        { deviceId },
-        'createdBy',
-        null,
-        User.modelName,
-      );
+      const device = await this._repository.findOne({ deviceId });
 
       if (!device) {
         throw new HttpException(
@@ -73,7 +82,44 @@ export class DevicesService extends BaseService<DeviceEsp> {
         );
       }
 
-      return this.map<DeviceVm>(device.toJSON());
+      return this.map<DeviceVm>(device);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getDeviceByUserId(userId: string): Promise<DeviceVm[]> {
+    try {
+      const devices = await this._repository.findAll({
+        createdBy: { _id: userId },
+      });
+
+      return this.map<DeviceVm[]>(devices, true);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async updateDevice(
+    deviceId: string,
+    deviceDto: DeviceUpdateEspVm,
+  ): Promise<DeviceVm> {
+    try {
+      const device = await this._repository.findOne({ deviceId });
+
+      if (!device) {
+        throw new HttpException('Device not found', HttpStatus.NOT_FOUND);
+      }
+
+      const deviceName = deviceDto.deviceName;
+      const deviceType = deviceDto.deviceType;
+      const isConnected = deviceDto.isConnected;
+
+      if (deviceName) device.deviceName = deviceName;
+      if (deviceType) device.deviceType = deviceType;
+      if (isConnected != null) device.isConnected = isConnected;
+
+      return await this._repository.updateById(device.id, device);
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
