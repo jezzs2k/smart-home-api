@@ -28,7 +28,7 @@ import { UserRole } from './models/user-role.enum';
 import { UserVm } from './models/user-vm.model';
 import { User } from './models/user.model';
 import { UserService } from './user.service';
-import { DeleteDeviceVm, GetUserVm, UpdateUserVm } from './models/user.dto';
+import { GetUserVm, UpdateUserVm } from './models/user.dto';
 import { GetUser } from 'src/shared/decorators/getUser.decorator';
 
 @Controller('user')
@@ -134,35 +134,5 @@ export class UserController {
     const user = await this._userService.updateUser(updateUserVm, userId);
 
     return user;
-  }
-
-  @Delete('/device')
-  @ApiBearerAuth()
-  @Roles(UserRole.Admin)
-  @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
-  @ApiResponse({ status: HttpStatus.CREATED, type: User })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
-  @ApiOperation(GetOperationId(User.modelName, 'Delete device'))
-  async deleteDevice(
-    @Body() deleteDeviceVm: DeleteDeviceVm,
-    @GetUser() userPayload: User,
-  ): Promise<UserVm> {
-    const userId = userPayload.id;
-    const deviceId = deleteDeviceVm?.deviceEspId;
-
-    if (!deviceId) {
-      throw new HttpException(
-        'Device id must provide !',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    try {
-      const user = this._userService.deleteDevice(deviceId, userId);
-
-      return user;
-    } catch (e) {
-      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
 }

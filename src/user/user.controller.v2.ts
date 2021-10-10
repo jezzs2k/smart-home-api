@@ -28,8 +28,7 @@ import { RegisterVm } from './models/register-vm.model';
 import { UserRole } from './models/user-role.enum';
 import { UserVm } from './models/user-vm.model';
 import { User } from './models/user.model';
-import { UserService } from './user.service';
-import { DeleteDeviceVm, GetUserVm, UpdateUserVm } from './models/user.dto';
+import { UpdateUserVm } from './models/user.dto';
 import { GetUser } from 'src/shared/decorators/getUser.decorator';
 import { UserServiceV2 } from './user.service.v2';
 import { UserRepository } from './user.repository';
@@ -97,8 +96,46 @@ export class UserControllerV2 {
     return await this._userServiceV2.register(registerVm);
   }
 
-  @Get()
-  async getUser(): Promise<any> {
-    return await this._userServiceV2.getUser();
+  @Get('/')
+  @Roles(UserRole.Admin)
+  @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
+  @ApiResponse({ status: HttpStatus.OK, type: UserV2 })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
+  async getUser(@GetUser() user: UserV2): Promise<any> {
+    return await this._userServiceV2.getUser(user.id);
+  }
+
+  @Put('/')
+  @ApiBearerAuth()
+  @Roles(UserRole.Admin)
+  @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
+  @ApiResponse({ status: HttpStatus.OK, type: UserV2 })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
+  async updateUser(
+    @Body() updateUserVm: UpdateUserVm,
+    @GetUser() userPayload: UserV2,
+  ): Promise<UserVm> {
+    const userId = userPayload.id;
+
+    try {
+      const user = await this.userRepository.findById(userId);
+
+      if (!user) {
+        throw new HttpException("Can't not find user!", HttpStatus.NOT_FOUND);
+      }
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    if (!updateUserVm) {
+      throw new HttpException(
+        'Params id must provide !',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const user = await this._userServiceV2.updateUser(updateUserVm, userId);
+
+    return user;
   }
 }

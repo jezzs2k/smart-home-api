@@ -3,7 +3,7 @@ import { prop, Ref } from '@typegoose/typegoose';
 
 import { BaseModelV2 } from '../../shared/base.model.v2';
 import { useMongoosePlugin } from '../../shared/decorators/use-mongoose-plugins.decorator';
-import { DevicesServiceV2 } from '../../devices/devices.service.v2';
+import { DeviceEspV2 } from './../../devices/models/device.model.v2';
 
 @useMongoosePlugin()
 export class UserV2 extends BaseModelV2 {
@@ -44,6 +44,6 @@ export class UserV2 extends BaseModelV2 {
   })
   isActive?: boolean;
 
-  @prop({ refPath: 'createdBy' })
-  devicesEsp: Ref<DevicesServiceV2>[];
+  @prop({ ref: () => DeviceEspV2 })
+  devicesEsp: Ref<DeviceEspV2>[];
 }

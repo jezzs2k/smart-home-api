@@ -104,52 +104,12 @@ export class UserService extends BaseService<User> {
   async updateUser(updateUser: UpdateUserVm, userId: string): Promise<UserVm> {
     const firstname = updateUser?.firstname;
     const lastname = updateUser?.lastname;
-    const deviceEsp = updateUser?.devicesEsp;
-
-    // let newDevice: DeiveceEsp;
-
-    // if (deviceEsp) {
-    //   newDevice = new DeiveceEsp();
-
-    //   const deviceName = deviceEsp?.deviceName;
-    //   const deviceType = deviceEsp?.deviceType;
-    //   const deviceId = deviceEsp.deviceEspId;
-    //   const isConnected = !!deviceEsp.isConnected;
-
-    //   newDevice.deviceId = deviceId;
-    //   newDevice.isConnected = isConnected;
-
-    //   if (deviceType) newDevice.deviceType = deviceType;
-    //   if (deviceName) newDevice.deviceName = deviceName;
-    // }
 
     try {
       const user = await this.findById(userId);
       if (firstname) user.firstName = firstname;
 
       if (lastname) user.lastName = lastname;
-
-      // if (newDevice) {
-      //   if (user.devicesEsp?.length > 0) {
-      //     const deviceExist = user.devicesEsp.find(
-      //       (item) => item.deviceId === newDevice.deviceId,
-      //     );
-
-      //     if (!deviceExist) {
-      //       user.devicesEsp = [...user.devicesEsp, newDevice];
-      //     } else {
-      //       user.devicesEsp = user.devicesEsp.map((item) => {
-      //         if (item.deviceId === deviceExist.deviceId) {
-      //           return newDevice;
-      //         } else {
-      //           return item;
-      //         }
-      //       });
-      //     }
-      //   } else {
-      //     user.devicesEsp = [newDevice];
-      //   }
-      // }
 
       const savedUser = await user.save();
 

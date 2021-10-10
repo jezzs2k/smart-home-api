@@ -1,3 +1,5 @@
+import { DeviceUpdateEspVm } from './models/device.dto';
+import { UserV2 } from 'src/user/models/user.model.v2';
 import {
   HttpException,
   Injectable,
@@ -8,7 +10,6 @@ import {
 import { MapperService } from 'src/shared/mapper/mapper.service';
 import { DeviceVm } from './models/device-vm.model';
 import { CreateDeviceDto } from './dto/createDevice.dto';
-import { User } from '../user/models/user.model';
 import { UserServiceV2 } from '../user/user.service.v2';
 import { BaseServiceV2 } from '../shared/base.service.v2';
 import { DeviceEspV2 } from './models/device.model.v2';
@@ -32,7 +33,7 @@ export class DevicesServiceV2 extends BaseServiceV2<DeviceEspV2> {
 
   async createDevice(
     createDeviceDto: CreateDeviceDto,
-    user: User,
+    user: UserV2,
   ): Promise<DeviceVm> {
     const { deviceId, deviceName } = createDeviceDto;
 
@@ -72,9 +73,7 @@ export class DevicesServiceV2 extends BaseServiceV2<DeviceEspV2> {
 
   async getDevice(deviceId: string): Promise<DeviceVm> {
     try {
-      const device = await this._repository
-        .findOne({ deviceId })
-        .populate('createdBy', 'username email', this.userRepository.modelName);
+      const device = await this._repository.findOne({ deviceId });
 
       if (!device) {
         throw new HttpException(
@@ -84,6 +83,43 @@ export class DevicesServiceV2 extends BaseServiceV2<DeviceEspV2> {
       }
 
       return this.map<DeviceVm>(device);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getDeviceByUserId(userId: string): Promise<DeviceVm[]> {
+    try {
+      const devices = await this._repository.findAll({
+        createdBy: { _id: userId },
+      });
+
+      return this.map<DeviceVm[]>(devices, true);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async updateDevice(
+    deviceId: string,
+    deviceDto: DeviceUpdateEspVm,
+  ): Promise<DeviceVm> {
+    try {
+      const device = await this._repository.findOne({ deviceId });
+
+      if (!device) {
+        throw new HttpException('Device not found', HttpStatus.NOT_FOUND);
+      }
+
+      const deviceName = deviceDto.deviceName;
+      const deviceType = deviceDto.deviceType;
+      const isConnected = deviceDto.isConnected;
+
+      if (deviceName) device.deviceName = deviceName;
+      if (deviceType) device.deviceType = deviceType;
+      if (isConnected != null) device.isConnected = isConnected;
+
+      return await this._repository.updateById(device.id, device);
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }

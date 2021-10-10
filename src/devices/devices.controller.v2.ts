@@ -1,3 +1,4 @@
+import { DeviceUpdateEspVm } from './models/device.dto';
 import { ApiException } from './../shared/api-exception.model';
 import {
   Body,
@@ -7,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -27,6 +29,7 @@ import { RolesGuard } from '../shared/guards/roles.guard';
 import { DevicesServiceV2 } from './devices.service.v2';
 import { DeviceRepository } from './devices.repository';
 import { UserRepository } from '../user/user.repository';
+import { UserV2 } from 'src/user/models/user.model.v2';
 
 @Controller('devices')
 @ApiTags('Devices')
@@ -65,9 +68,11 @@ export class DevicesControllerV2 {
   @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
   @ApiResponse({ status: HttpStatus.CREATED, type: DeviceVm })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
-  async addDevice(@Body() createdDevice: CreateDeviceDto): Promise<DeviceVm> {
+  async addDevice(
+    @Body() createdDevice: CreateDeviceDto,
+    @GetUser() user: UserV2,
+  ): Promise<DeviceVm> {
     const { deviceId, deviceName } = createdDevice;
-    const user: any[] = await this.userRepository.findAll();
 
     if (!deviceName || !deviceId) {
       throw new HttpException(
@@ -88,12 +93,46 @@ export class DevicesControllerV2 {
 
       const result = await this._deviceServiceV2.createDevice(
         createdDevice,
-        user[0],
+        user,
       );
 
       return result;
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @Get('/')
+  @Roles(UserRole.Admin)
+  @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
+  @ApiResponse({ status: HttpStatus.FOUND, type: DeviceVm })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
+  async getDeviceByUserId(@GetUser() user: UserV2): Promise<DeviceVm[]> {
+    const result = await this._deviceServiceV2.getDeviceByUserId(user.id);
+
+    return result;
+  }
+
+  @Put('/:deviceId')
+  @Roles(UserRole.Admin)
+  @UseGuards(AuthGuard('jwt'), new RolesGuard(new Reflector()))
+  @ApiResponse({ status: HttpStatus.FOUND, type: DeviceVm })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ApiException })
+  async updateDevice(
+    @Param('deviceId') deviceId: string,
+    @Body() deviceDto: DeviceUpdateEspVm,
+  ): Promise<DeviceVm> {
+    if (!deviceId) {
+      throw new HttpException(
+        'Device Id have must writing!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const result = await this._deviceServiceV2.updateDevice(
+      deviceId,
+      deviceDto,
+    );
+
+    return result;
   }
 }

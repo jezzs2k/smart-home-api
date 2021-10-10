@@ -1,6 +1,6 @@
+import { UserV2 } from './../../user/models/user.model.v2';
 import { prop, Ref } from '@typegoose/typegoose';
 
-import { User } from 'src/user/models/user.model';
 import { BaseModelV2 } from '../../shared/base.model.v2';
 import { useMongoosePlugin } from '../../shared/decorators/use-mongoose-plugins.decorator';
 
@@ -16,9 +16,10 @@ export class DeviceEspV2 extends BaseModelV2 {
   deviceId: string;
 
   @prop({
-    ref: () => User,
+    ref: () => UserV2,
+    autopopulate: true,
   })
-  createdBy: Ref<User>;
+  createdBy: Ref<UserV2>;
 
   @prop({
     default: false,

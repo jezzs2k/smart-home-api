@@ -84,22 +84,33 @@ export class UserServiceV2 extends BaseServiceV2<UserV2> {
     };
   }
 
-  async getUser(): Promise<UserVm> {
+  async getUser(userId: string): Promise<UserVm> {
     try {
-      const users = await this.userRepository
-        .findById('61615ea605feaf8fa9d2e5a2')
-        .populate(
-          'devicesEsp',
-          'deviceName deviceId isConnected',
-          'DeviceEspV2',
-        )
-        .exec();
+      const users = await this.userRepository.findById(userId).exec();
 
       if (!users) {
         throw new HttpException("User dostn't not found", HttpStatus.NOT_FOUND);
       }
 
       return this.map<UserVm>(users);
+    } catch (e) {
+      throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async updateUser(updateUser: UpdateUserVm, userId: string): Promise<UserVm> {
+    const firstname = updateUser?.firstname;
+    const lastname = updateUser?.lastname;
+
+    try {
+      const user = await this._repository.findById(userId);
+      if (firstname) user.firstName = firstname;
+
+      if (lastname) user.lastName = lastname;
+
+      const savedUser = await this._repository.updateById(userId, user);
+
+      return this.map<UserVm>(savedUser);
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
