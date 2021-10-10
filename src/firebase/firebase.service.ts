@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
-import { UserService } from '../user/user.service';
+import { DeviceRepository } from 'src/devices/devices.repository';
 
 const ServiceAccount = require('../../../htcdt-iot-firebase-adminsdk-lvhlo-fbbe730e62.json');
 
@@ -8,7 +8,7 @@ const ServiceAccount = require('../../../htcdt-iot-firebase-adminsdk-lvhlo-fbbe7
 export class FirebaseService {
   private readonly serviceAccount = ServiceAccount;
 
-  constructor(private readonly _userService: UserService) {
+  constructor(private readonly _deviceService: DeviceRepository) {
     this.configurationFirebase();
   }
 
@@ -23,35 +23,34 @@ export class FirebaseService {
     //ref with id esp
     const ref = db.ref();
 
-    ref.on('value', (snapshot) => {
+    ref.on('value', async (snapshot) => {
       const data = snapshot.val();
 
-      console.log(data);
-
-      if (data?.getuser) {
-        for (const key in data?.getuser) {
+      if (data) {
+        for (const key in data) {
           if (data[key]?.isActive === 'true') {
-            console.log('ok true');
+            console.log(`ESP ${key} isCONNECTED: ${data[key]?.isActive}`);
           } else {
-            db.ref(key + '/setUser').set('true');
-            db.ref(key + '/isActive').set('true');
+            console.log('Firebase Data: ', data);
+
+            const device = await this._deviceService.findOne({ deviceId: key });
+            if (!device) {
+              //recheck
+              db.ref(key + '/isActive').set('true');
+            } else {
+              db.ref(key).set({ isActive: true, setUser: device.createdBy.id });
+              // db.ref(key + '/isConnected').set('true'); // update client(app) + update esp (if neccessary)
+            }
           }
-          // if (data?.getuser[key] === 'true') {
-          //   console.log('Tao co roi nhe buy');
-          // } else {
-          //   setTimeout(() => {
-          //     db.ref('/user/' + key).set('23123123123123213123');
-          //     db.ref('/getuser/' + key).set('true');
-          //   }, 1000);
-          // }
+
+          if (data[key]?.isConnected === 'true') {
+            const device = await this._deviceService.findOne({ deviceId: key });
+
+            device.isConnected = true;
+            await this._deviceService.updateById(device.id, device);
+          }
         }
       }
-    });
-  }
-
-  private async handleGetUserByDeviceId(deviceId: string) {
-    return new Promise((resolve, reject) => {
-      // const user
     });
   }
 }

@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { AppClusterService } from './shared/app.cluster.service';
 
 declare const module: any;
 
@@ -42,3 +43,4 @@ async function bootstrap() {
   await app.listen(AppModule.port);
 }
 bootstrap();
+// AppClusterService.clusterize(bootstrap);
