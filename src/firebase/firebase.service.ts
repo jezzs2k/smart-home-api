@@ -38,7 +38,13 @@ export class FirebaseService {
               //recheck
               db.ref(key + '/isActive').set('true');
             } else {
-              db.ref(key).set({ isActive: true, setUser: device.createdBy.id });
+              db.ref(key).set({
+                isActive: 'true',
+                setUser: device.createdBy.id,
+                isResetUserIdEeprom: 'false',
+                isResetEeprom: 'false',
+                isTurnOn: 'false',
+              });
               // db.ref(key + '/isConnected').set('true'); // update client(app) + update esp (if neccessary)
             }
           }
