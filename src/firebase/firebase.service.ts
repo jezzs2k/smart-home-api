@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { DeviceRepository } from 'src/devices/devices.repository';
 
-const ServiceAccount = require('../../../htcdt-iot-firebase-adminsdk-lvhlo-fbbe730e62.json');
+const ServiceAccount = require('../../../smart-home-87480-firebase-adminsdk-295mc-19be7d9e07.json');
 
 @Injectable()
 export class FirebaseService {
@@ -15,7 +15,7 @@ export class FirebaseService {
   private configurationFirebase() {
     admin.initializeApp({
       credential: admin.credential.cert(this.serviceAccount),
-      databaseURL: 'https://htcdt-iot-default-rtdb.firebaseio.com/',
+      databaseURL: 'https://smart-home-87480-default-rtdb.firebaseio.com/',
     });
 
     const db = admin.database();
@@ -53,6 +53,11 @@ export class FirebaseService {
             const device = await this._deviceService.findOne({ deviceId: key });
 
             device.isConnected = true;
+            await this._deviceService.updateById(device.id, device);
+          } else {
+            const device = await this._deviceService.findOne({ deviceId: key });
+
+            device.isConnected = false;
             await this._deviceService.updateById(device.id, device);
           }
         }
