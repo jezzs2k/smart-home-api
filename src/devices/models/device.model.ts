@@ -25,4 +25,9 @@ export class DeviceEsp extends BaseModel {
     default: false,
   })
   isConnected: boolean;
+
+  @prop({
+    default: false,
+  })
+  isTurnOn: boolean;
 }

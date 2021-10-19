@@ -14,4 +14,7 @@ export class DeviceVm extends BaseModelVm {
 
   @ApiProperty()
   isConnected?: boolean;
+
+  @ApiProperty()
+  isTurnOn?: boolean;
 }

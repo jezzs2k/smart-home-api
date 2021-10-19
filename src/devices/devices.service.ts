@@ -114,10 +114,12 @@ export class DevicesService extends BaseService<DeviceEsp> {
       const deviceName = deviceDto.deviceName;
       const deviceType = deviceDto.deviceType;
       const isConnected = deviceDto.isConnected;
+      const isTurnOn = deviceDto.isTurnOn;
 
       if (deviceName) device.deviceName = deviceName;
       if (deviceType) device.deviceType = deviceType;
       if (isConnected != null) device.isConnected = isConnected;
+      if (isTurnOn != null) device.isTurnOn = isTurnOn;
 
       return await this._repository.updateById(device.id, device);
     } catch (e) {
