@@ -44,6 +44,7 @@ export class FirebaseService {
                 isResetUserIdEeprom: 'false',
                 isResetEeprom: 'false',
                 isTurnOn: 'false',
+                isConnected: data[key]?.isConnected || 'false',
               });
               // db.ref(key + '/isConnected').set('true'); // update client(app) + update esp (if neccessary)
             }
