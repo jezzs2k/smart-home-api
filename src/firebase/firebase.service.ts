@@ -60,6 +60,26 @@ export class FirebaseService {
             device.isConnected = false;
             await this._deviceService.updateById(device.id, device);
           }
+
+          if (
+            data[key]?.isTurnOn === 'true' &&
+            data[key]?.isConnected === 'true'
+          ) {
+            const device = await this._deviceService.findOne({ deviceId: key });
+
+            device.isTurnOn = true;
+            await this._deviceService.updateById(device.id, device);
+          }
+
+          if (
+            data[key]?.isTurnOn === 'false' &&
+            data[key]?.isConnected === 'true'
+          ) {
+            const device = await this._deviceService.findOne({ deviceId: key });
+
+            device.isTurnOn = false;
+            await this._deviceService.updateById(device.id, device);
+          }
         }
       }
     });

@@ -9,4 +9,7 @@ export class DeviceUpdateEspVm {
 
   @ApiProperty({ default: false })
   isConnected?: boolean;
+
+  @ApiProperty({ default: false })
+  isTurnOn?: boolean;
 }
