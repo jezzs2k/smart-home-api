@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import * as admin from 'firebase-admin';
 import { DeviceRepository } from 'src/devices/devices.repository';
 import { ConfigurationsService } from 'src/shared/configurations/configurations.service';
@@ -12,6 +13,7 @@ export class FirebaseService {
   constructor(
     private readonly _deviceService: DeviceRepository,
     private readonly _configuration: ConfigurationsService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.configurationFirebase();
   }

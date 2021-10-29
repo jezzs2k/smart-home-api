@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { Module, CacheModule, CacheStoreFactory } from '@nestjs/common';
 import { TypegooseModule } from 'nestjs-typegoose';
+import * as redisStore from 'cache-manager-redis-store';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Configuration } from './shared/configurations/configurations.enum';
@@ -15,6 +16,10 @@ import { DevicesModule } from './devices/devices.module';
     TypegooseModule.forRoot(ConfigurationsService.connectionString),
     UserModule,
     DevicesModule,
+    CacheModule.register({
+      store: redisStore as CacheStoreFactory,
+      host: 'localhost',
+    }),
   ],
   controllers: [AppController],
   providers: [AppService, FirebaseService],
