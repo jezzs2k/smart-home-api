@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { DeviceRepository } from 'src/devices/devices.repository';
+import { ConfigurationsService } from 'src/shared/configurations/configurations.service';
 
 const ServiceAccount = require('../../../smart-home-87480-firebase-adminsdk-295mc-19be7d9e07.json');
 
@@ -8,14 +9,17 @@ const ServiceAccount = require('../../../smart-home-87480-firebase-adminsdk-295m
 export class FirebaseService {
   private readonly serviceAccount = ServiceAccount;
 
-  constructor(private readonly _deviceService: DeviceRepository) {
+  constructor(
+    private readonly _deviceService: DeviceRepository,
+    private readonly _configuration: ConfigurationsService,
+  ) {
     this.configurationFirebase();
   }
 
   private configurationFirebase() {
     admin.initializeApp({
       credential: admin.credential.cert(this.serviceAccount),
-      databaseURL: 'https://smart-home-87480-default-rtdb.firebaseio.com/',
+      databaseURL: this._configuration.get('DATA_BASE_URL_FIREBASE'),
     });
 
     const db = admin.database();
@@ -84,5 +88,67 @@ export class FirebaseService {
         }
       }
     });
+  }
+
+  pushSpecificNotifyIos(title: string, deviceToken: string) {
+    const ios = {
+      headers: {
+        'apns-priority': this._configuration.get('apnsPriorityIos'),
+        'apns-expiration': this._configuration.get('apnsExpiration'),
+      },
+      payload: {
+        aps: {
+          alert: {
+            title,
+          },
+          badge: 1,
+          sound: this._configuration.get('sound'),
+        },
+      },
+    };
+
+    const message = {
+      apns: ios,
+      token: deviceToken,
+    };
+
+    admin
+      .messaging()
+      .send(message)
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        return error;
+      });
+  }
+
+  pushSpecificNotifyAndoird(
+    title: string,
+    content: string,
+    deviceToken: string,
+  ) {
+    const android = {
+      ttl: 36000,
+      data: {
+        title: title,
+        content: content,
+      },
+    };
+
+    const message = {
+      android,
+      token: deviceToken,
+    };
+
+    admin
+      .messaging()
+      .send(message)
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        return error;
+      });
   }
 }
