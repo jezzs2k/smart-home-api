@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { User } from './models/user.model';
 import { TypegooseModule } from 'nestjs-typegoose';
+import { User } from './models/user.model';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { UserRepository } from './user.repository';

@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import * as admin from 'firebase-admin';
+import * as _ from 'lodash';
 import { DeviceRepository } from 'src/devices/devices.repository';
+import { DeviceEsp } from 'src/devices/models/device.model';
 import { ConfigurationsService } from 'src/shared/configurations/configurations.service';
 
 const ServiceAccount = require('../../../smart-home-87480-firebase-adminsdk-295mc-19be7d9e07.json');
@@ -12,6 +15,7 @@ export class FirebaseService {
   constructor(
     private readonly _deviceService: DeviceRepository,
     private readonly _configuration: ConfigurationsService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.configurationFirebase();
   }
@@ -35,22 +39,41 @@ export class FirebaseService {
           if (data[key]?.isActive === 'true') {
             console.log(`ESP ${key} isCONNECTED: ${data[key]?.isActive}`);
           } else {
-            console.log('Firebase Data: ', data);
+            console.log('Firebase key: ', key);
 
-            const device = await this._deviceService.findOne({ deviceId: key });
-            if (!device) {
-              //recheck
-              db.ref(key + '/isActive').set('true');
+            const deviceCache = await this.cacheManager.get<DeviceEsp>(key);
+
+            if (_.isNull(deviceCache)) {
+              const device = await this._deviceService.findOne({
+                deviceId: key,
+              });
+
+              await this.cacheManager.set(key, device, { ttl: 3600 });
+
+              if (!device) {
+                //recheck
+                db.ref(key + '/isActive').set('true');
+              } else {
+                db.ref(key).set({
+                  isActive: 'true',
+                  setUser: device.createdBy.id,
+                  isResetUserIdEeprom: 'false',
+                  isResetEeprom: 'false',
+                  isTurnOn: 'false',
+                  isConnected: data[key]?.isConnected || 'false',
+                });
+              }
             } else {
+              console.log('From - Cache: ', key);
+
               db.ref(key).set({
                 isActive: 'true',
-                setUser: device.createdBy.id,
+                setUser: deviceCache.createdBy.id,
                 isResetUserIdEeprom: 'false',
                 isResetEeprom: 'false',
                 isTurnOn: 'false',
                 isConnected: data[key]?.isConnected || 'false',
               });
-              // db.ref(key + '/isConnected').set('true'); // update client(app) + update esp (if neccessary)
             }
           }
 
@@ -70,20 +93,70 @@ export class FirebaseService {
             data[key]?.isTurnOn === 'true' &&
             data[key]?.isConnected === 'true'
           ) {
-            const device = await this._deviceService.findOne({ deviceId: key });
+            const deviceCache = await this.cacheManager.get<DeviceEsp>(key);
 
-            device.isTurnOn = true;
-            await this._deviceService.updateById(device.id, device);
+            if (_.isNull(deviceCache)) {
+              const device = await this._deviceService.findOne({
+                deviceId: key,
+              });
+
+              device.isTurnOn = true;
+              const deviceUpdated = await this._deviceService.updateById(
+                device.id,
+                device,
+              );
+
+              await this.cacheManager.set<DeviceEsp>(key, deviceUpdated, {
+                ttl: 900,
+              });
+            } else {
+              console.log('From - Cache: ', key);
+
+              deviceCache.isTurnOn = true;
+              const deviceUpdated = await this._deviceService.updateById(
+                deviceCache.id,
+                deviceCache,
+              );
+
+              await this.cacheManager.set<DeviceEsp>(key, deviceUpdated, {
+                ttl: 900,
+              });
+            }
           }
 
           if (
             data[key]?.isTurnOn === 'false' &&
             data[key]?.isConnected === 'true'
           ) {
-            const device = await this._deviceService.findOne({ deviceId: key });
+            const deviceCache = await this.cacheManager.get<DeviceEsp>(key);
 
-            device.isTurnOn = false;
-            await this._deviceService.updateById(device.id, device);
+            if (_.isNull(deviceCache)) {
+              const device = await this._deviceService.findOne({
+                deviceId: key,
+              });
+
+              device.isTurnOn = false;
+              const deviceUpdated = await this._deviceService.updateById(
+                device.id,
+                device,
+              );
+
+              await this.cacheManager.set<DeviceEsp>(key, deviceUpdated, {
+                ttl: 900,
+              });
+            } else {
+              console.log('From - Cache: ', key);
+
+              deviceCache.isTurnOn = false;
+              const deviceUpdated = await this._deviceService.updateById(
+                deviceCache.id,
+                deviceCache,
+              );
+
+              await this.cacheManager.set<DeviceEsp>(key, deviceUpdated, {
+                ttl: 900,
+              });
+            }
           }
         }
       }

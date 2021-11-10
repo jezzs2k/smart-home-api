@@ -6,6 +6,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { compare, hash } from 'bcryptjs';
+// import * as admin from 'firebase-admin';
 
 import { RegisterVm } from './models/register-vm.model';
 import { UserVm } from './models/user-vm.model';
@@ -33,6 +34,32 @@ export class UserService extends BaseService<User> {
     this._mapper = _mapperService.mapper;
   }
 
+  // private async createUserFirebase(userId: string) {
+  //   if (!userId) {
+  //     throw new Error('CustomerId is not be null');
+  //   }
+
+  //   await admin.auth().createUser({ uid: userId });
+  // }
+
+  // private async setCustomerClaim(custemerId: string, customClaim = {}) {
+  //   if (!custemerId) {
+  //     throw new Error('CustomerId is not be null');
+  //   }
+
+  //   const customClaims = {
+  //     admin: true,
+  //     ...customClaim,
+  //   };
+  //   try {
+  //     await admin.auth().createCustomToken(custemerId);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+
+  //   // await admin.auth().setCustomUserClaims(custemerId, customClaims);
+  // }
+
   async register(register: RegisterVm): Promise<UserVm> {
     const { username, password, email } = register;
 
@@ -46,7 +73,11 @@ export class UserService extends BaseService<User> {
     try {
       const result = await this._repository.create(newUser);
 
-      return (await this.map<UserVm>(result.toJSON())) as UserVm;
+      const userVm = (await this.map<UserVm>(result.toJSON())) as UserVm;
+
+      // await this.createUserFirebase(userVm.id);
+
+      return userVm;
     } catch (e) {
       //MongoError
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -77,6 +108,10 @@ export class UserService extends BaseService<User> {
     const token = await this._authService.signPayload(payload);
 
     const userVm: UserVm = await this.map<UserVm>(user);
+
+    // await this.createUserFirebase(userVm.id);
+
+    // await this.setCustomerClaim(userVm.id);
 
     return {
       token,
