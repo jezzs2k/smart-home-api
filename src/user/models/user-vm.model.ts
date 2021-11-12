@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseModelVm } from 'src/shared/base.model';
+import { WorkerType } from '../models/user.model';
 
 export class UserVm extends BaseModelVm {
   @ApiProperty()
@@ -17,6 +18,9 @@ export class UserVm extends BaseModelVm {
 
   @ApiProperty()
   deviceToken?: string;
+
+  @ApiProperty()
+  workers?: WorkerType[];
 
   @ApiProperty()
   fullName?: string;

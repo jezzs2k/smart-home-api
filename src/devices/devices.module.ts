@@ -7,9 +7,9 @@ import { DeviceRepository } from './devices.repository';
 import { DeviceEsp } from './models/device.model';
 
 @Module({
-  providers: [DevicesService, DeviceRepository],
+  providers: [DeviceRepository, DevicesService],
   controllers: [DevicesController],
   imports: [TypegooseModule.forFeature([DeviceEsp]), UserModule],
-  exports: [DevicesService, DeviceRepository],
+  exports: [DeviceRepository, DevicesService],
 })
 export class DevicesModule {}

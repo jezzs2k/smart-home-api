@@ -5,6 +5,12 @@ import { BaseModel } from '../../shared/base.model';
 import { useMongoosePlugin } from '../../shared/decorators/use-mongoose-plugins.decorator';
 import { DeviceEsp } from '../../devices/models/device.model';
 
+export interface WorkerType {
+  isRunning: boolean;
+  name: string;
+  seconds: string;
+  createdAt: Date;
+}
 @useMongoosePlugin()
 export class User extends BaseModel {
   @prop({
@@ -41,6 +47,9 @@ export class User extends BaseModel {
     default: UserRole.Admin,
   })
   role: UserRole;
+
+  @prop()
+  workers?: WorkerType[];
 
   @prop({
     default: false,

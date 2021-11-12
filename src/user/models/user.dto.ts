@@ -8,4 +8,6 @@ export class UpdateUserVm {
   @ApiProperty() firstname?: string;
   @ApiProperty() lastname?: string;
   @ApiProperty() deviceToken?: string;
+  @ApiProperty()
+  workers?: WorkerType[];
 }
