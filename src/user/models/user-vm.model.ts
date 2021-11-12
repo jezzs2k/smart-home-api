@@ -16,5 +16,8 @@ export class UserVm extends BaseModelVm {
   lastName?: string;
 
   @ApiProperty()
+  deviceToken?: string;
+
+  @ApiProperty()
   fullName?: string;
 }

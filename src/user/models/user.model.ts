@@ -33,6 +33,9 @@ export class User extends BaseModel {
   @prop()
   lastName?: string;
 
+  @prop()
+  deviceToken?: string;
+
   @prop({
     enum: UserRole,
     default: UserRole.Admin,

@@ -136,12 +136,15 @@ export class UserService extends BaseService<User> {
   async updateUser(updateUser: UpdateUserVm, userId: string): Promise<UserVm> {
     const firstname = updateUser?.firstname;
     const lastname = updateUser?.lastname;
+    const deviceToken = updateUser?.deviceToken;
 
     try {
       const user = await this._repository.findById(userId);
       if (firstname) user.firstName = firstname;
 
       if (lastname) user.lastName = lastname;
+
+      if (deviceToken) user.deviceToken = deviceToken;
 
       const savedUser = await this._repository.updateById(userId, user);
 
