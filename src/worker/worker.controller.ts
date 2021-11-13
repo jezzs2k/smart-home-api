@@ -121,8 +121,9 @@ export class WorkerController {
 
     if (isHas) {
       await this.workerService.stopWorker(deviceId, userId, device.deviceName);
+      return { success: true };
     }
 
-    return { success: true };
+    return { success: false };
   }
 }

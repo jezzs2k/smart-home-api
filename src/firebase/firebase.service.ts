@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { ConfigurationsService } from 'src/shared/configurations/configurations.service';
 import { RedisCacheService } from 'src/redis-cache/redis-cache.service';
-import { setTimeout } from 'timers';
 
 @Injectable()
 export class FirebaseService {
@@ -59,7 +58,6 @@ export class FirebaseService {
     deviceToken: string,
   ) {
     const android = {
-      ttl: 24 * 60 * 60 * 1000,
       data: {
         title: title,
         content: content,
@@ -68,6 +66,21 @@ export class FirebaseService {
 
     const message = {
       android,
+      apns: {
+        headers: {
+          'apns-priority': this._configuration.get('apnsPriorityIos'),
+          'apns-expiration': this._configuration.get('apnsExpiration'),
+        },
+        payload: {
+          aps: {
+            alert: {
+              title,
+            },
+            badge: 1,
+            sound: this._configuration.get('sound'),
+          },
+        },
+      },
       token: deviceToken,
     };
 
