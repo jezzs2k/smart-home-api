@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import * as cron from 'cron';
 import { DeviceRepository } from 'src/devices/devices.repository';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { WorkerType } from 'src/user/models/user.model';
@@ -17,7 +16,7 @@ export class WorkerService {
 
   async createWorker(
     name: string,
-    seconds: string,
+    seconds: number,
     userId: string,
   ): Promise<Boolean> {
     const user = await this.userRepository.findById(userId);
@@ -27,9 +26,8 @@ export class WorkerService {
       throw new HttpException('Device not found', HttpStatus.NOT_FOUND);
     }
 
-    const job = new cron.CronJob(`*/${seconds} * * * * *`, async () => {
-      console.log(`time (${seconds}) for job ${name} to run!`);
-      await this.stopWorker(name, userId, device.deviceName);
+    const callback = async () => {
+      await this.stopWorker(name, userId, device.deviceName, false);
 
       await this.firebaseService.handleOnOffDevice(
         name,
@@ -45,10 +43,17 @@ export class WorkerService {
       device.isTurnOn = !device.isTurnOn;
 
       await this.deviceRepository.updateById(device.id, device);
-    });
+    };
 
-    this.schedulerRegistry.addCronJob(name, job);
-    job.start();
+    const timeout = setTimeout(callback, seconds * 1000);
+    this.schedulerRegistry.addTimeout(name, timeout);
+
+    // const job = new cron.CronJob(`*/${seconds} * * * * *`, async () => {
+    //   console.log(`time (${seconds}) for job ${name} to run!`);
+    // });
+
+    // this.schedulerRegistry.addCronJob(name, job);
+    // job.start();
 
     console.log(`job ${name} added for each minute at ${seconds} seconds!`);
 
@@ -73,11 +78,16 @@ export class WorkerService {
   }
 
   async checkHasExist(workerName: string) {
-    return this.schedulerRegistry.doesExists('cron', workerName);
+    return this.schedulerRegistry.doesExists('timeout', workerName);
   }
 
-  async stopWorker(workerName: string, userId: string, deviceName: string) {
-    this.schedulerRegistry.deleteCronJob(workerName);
+  async stopWorker(
+    workerName: string,
+    userId: string,
+    deviceName: string,
+    isPushNotifi = true,
+  ) {
+    this.schedulerRegistry.deleteTimeout(workerName);
     const user = await this.userRepository.findById(userId);
 
     user.workers = user.workers.filter(
@@ -86,11 +96,12 @@ export class WorkerService {
 
     await this.userRepository.updateById(userId, user);
 
-    this.firebaseService.pushSpecificNotifyAndoird(
-      'Thông báo bật tắt thiết bị',
-      'Hệ thống hẹn giờ cho thiết bị ' + deviceName + ' đã bị hủy.',
-      user.deviceToken,
-    );
+    isPushNotifi &&
+      this.firebaseService.pushSpecificNotifyAndoird(
+        'Thông báo bật tắt thiết bị',
+        'Hệ thống hẹn giờ cho thiết bị ' + deviceName + ' đã bị hủy.',
+        user.deviceToken,
+      );
 
     console.log(`job ${workerName} deleted!`);
     return true;

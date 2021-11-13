@@ -5,5 +5,5 @@ export class CreateWorkerVm {
   deviceId: string;
 
   @ApiProperty()
-  seconds: string;
+  seconds: number;
 }

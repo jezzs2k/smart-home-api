@@ -8,7 +8,7 @@ import { DeviceEsp } from '../../devices/models/device.model';
 export interface WorkerType {
   isRunning: boolean;
   name: string;
-  seconds: string;
+  seconds: number;
   createdAt: Date;
 }
 @useMongoosePlugin()

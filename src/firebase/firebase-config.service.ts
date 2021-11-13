@@ -34,17 +34,32 @@ export class FirebaseConfig {
         'isRunAllRealTime',
       );
 
+      // const totalRealTime = await this.cacheManager.get<number>(
+      //   'totalRealTime',
+      // );
+
       await this.cacheManager.set<Boolean>('isRunAllRealTime', true, {
         ttl: 24 * 60 * 60,
       });
-
-      console.log('isRunAllRealTime', isRunAllRealTime);
 
       if (
         (typeof isRunAllRealTime === 'boolean' && isRunAllRealTime) ||
         typeof isRunAllRealTime !== 'boolean'
       ) {
         const data = snapshot.val();
+
+        // const totalData = snapshot.numChildren();
+
+        // if (totalRealTime && totalData === totalRealTime) {
+        //   return;
+        // }
+
+        // snapshot.exists() &&
+        //   totalData !== totalRealTime &&
+        //   (await this.cacheManager.set<number>('totalRealTime', totalData, {
+        //     ttl: 60 * 60,
+        //   }));
+
         if (data) {
           for (const key in data) {
             if (data[key]?.isActive === 'true') {
