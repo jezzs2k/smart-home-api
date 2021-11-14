@@ -36,8 +36,6 @@ export class FirebaseConfig {
     ref.once('value', (snap) => {
       const data = snap.val();
 
-      console.log('firse once');
-
       for (const key in data) {
         if (data[key].isNewItem === 'false') {
           this.createRealtime(key);
@@ -47,8 +45,6 @@ export class FirebaseConfig {
 
     setTimeout(() => {
       ref.on('value', async (snapshot) => {
-        console.log('firse on');
-
         const isRunAllRealTime = await this.cacheManager.get<Boolean>(
           'isRunAllRealTime',
         );
@@ -116,7 +112,6 @@ export class FirebaseConfig {
   }
 
   private createRealtime = (key: string) => {
-    console.log('iscreate ref', key);
     let isConnectedG = 'false';
 
     const db = admin.database();
@@ -130,8 +125,6 @@ export class FirebaseConfig {
       isConnectedG = isConnected;
 
       if (isConnected === 'true') {
-        console.log('isConnect', key);
-
         const device = await this._deviceService.findOne({
           deviceId: key,
         });
@@ -152,8 +145,6 @@ export class FirebaseConfig {
       const isTurnOn = snapshot.val();
 
       if (isTurnOn === 'true' && isConnectedG === 'true') {
-        console.log('ok ok isTurnOn', isTurnOn);
-
         const deviceCache = await this.cacheManager.get<DeviceEsp>(key);
 
         if (_.isNull(deviceCache)) {
@@ -184,8 +175,6 @@ export class FirebaseConfig {
       }
 
       if (isTurnOn === 'false' && isConnectedG === 'true') {
-        console.log('ok ok isTurnOn2', isTurnOn);
-
         const deviceCache = await this.cacheManager.get<DeviceEsp>(key);
 
         if (_.isNull(deviceCache)) {
