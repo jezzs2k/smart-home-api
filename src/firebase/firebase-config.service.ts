@@ -67,34 +67,17 @@ export class FirebaseConfig {
                   db.ref(key + '/isNewItem').set('false');
                 } else {
                   this.createRealtime(key);
-                  const deviceCache = await this.cacheManager.get<DeviceEsp>(
-                    key,
-                  );
 
-                  if (_.isNull(deviceCache)) {
-                    const device = await this._deviceService.findOne({
-                      deviceId: key,
-                    });
+                  const device = await this._deviceService.findOne({
+                    deviceId: key,
+                  });
 
-                    await this.cacheManager.set(key, device, { ttl: 3600 });
-
-                    if (!device) {
-                      db.ref(key + '/isActive').set('true');
-                    } else {
-                      db.ref(key).set({
-                        isActive: 'true',
-                        setUser: device.createdBy.id,
-                        isResetUserIdEeprom: 'false',
-                        isResetEeprom: 'false',
-                        isTurnOn: 'false',
-                        isConnected: data[key]?.isConnected || 'false',
-                        isNewItem: 'false',
-                      });
-                    }
+                  if (!device) {
+                    db.ref(key + '/isActive').set('true');
                   } else {
                     db.ref(key).set({
                       isActive: 'true',
-                      setUser: deviceCache.createdBy.id,
+                      setUser: device.createdBy.id,
                       isResetUserIdEeprom: 'false',
                       isResetEeprom: 'false',
                       isTurnOn: 'false',
