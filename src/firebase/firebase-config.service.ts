@@ -5,6 +5,7 @@ import { DeviceRepository } from 'src/devices/devices.repository';
 import { DeviceEsp } from 'src/devices/models/device.model';
 import { RedisCacheService } from 'src/redis-cache/redis-cache.service';
 import { ConfigurationsService } from 'src/shared/configurations/configurations.service';
+import { setTimeout } from 'timers';
 
 const ServiceAccount = require('../../../smart-home-87480-firebase-adminsdk-295mc-19be7d9e07.json');
 
@@ -35,6 +36,8 @@ export class FirebaseConfig {
     ref.once('value', (snap) => {
       const data = snap.val();
 
+      console.log('firse once');
+
       for (const key in data) {
         if (data[key].isNewItem === 'false') {
           this.createRealtime(key);
@@ -42,78 +45,89 @@ export class FirebaseConfig {
       }
     });
 
-    ref.on('value', async (snapshot) => {
-      const isRunAllRealTime = await this.cacheManager.get<Boolean>(
-        'isRunAllRealTime',
-      );
+    setTimeout(() => {
+      ref.on('value', async (snapshot) => {
+        console.log('firse on');
 
-      await this.cacheManager.set<Boolean>('isRunAllRealTime', true, {
-        ttl: 24 * 60 * 60,
-      });
+        const isRunAllRealTime = await this.cacheManager.get<Boolean>(
+          'isRunAllRealTime',
+        );
 
-      const data = snapshot.val();
+        await this.cacheManager.set<Boolean>('isRunAllRealTime', true, {
+          ttl: 24 * 60 * 60,
+        });
 
-      if (
-        (typeof isRunAllRealTime === 'boolean' && isRunAllRealTime) ||
-        typeof isRunAllRealTime !== 'boolean'
-      ) {
-        if (data) {
-          for (const key in data) {
-            if (data[key].isNewItem === 'false') {
-            } else {
-              if (data[key]?.isActive === 'true') {
-                this.createRealtime(key);
-                db.ref(key + '/isNewItem').set('false');
+        const data = snapshot.val();
+
+        if (
+          (typeof isRunAllRealTime === 'boolean' && isRunAllRealTime) ||
+          typeof isRunAllRealTime !== 'boolean'
+        ) {
+          if (data) {
+            for (const key in data) {
+              if (data[key].isNewItem === 'false') {
               } else {
-                const deviceCache = await this.cacheManager.get<DeviceEsp>(key);
+                if (data[key]?.isActive === 'true') {
+                  db.ref(key + '/isNewItem').set('false');
+                } else {
+                  this.createRealtime(key);
+                  const deviceCache = await this.cacheManager.get<DeviceEsp>(
+                    key,
+                  );
 
-                if (_.isNull(deviceCache)) {
-                  const device = await this._deviceService.findOne({
-                    deviceId: key,
-                  });
+                  if (_.isNull(deviceCache)) {
+                    const device = await this._deviceService.findOne({
+                      deviceId: key,
+                    });
 
-                  await this.cacheManager.set(key, device, { ttl: 3600 });
+                    await this.cacheManager.set(key, device, { ttl: 3600 });
 
-                  if (!device) {
-                    db.ref(key + '/isActive').set('true');
+                    if (!device) {
+                      db.ref(key + '/isActive').set('true');
+                    } else {
+                      db.ref(key).set({
+                        isActive: 'true',
+                        setUser: device.createdBy.id,
+                        isResetUserIdEeprom: 'false',
+                        isResetEeprom: 'false',
+                        isTurnOn: 'false',
+                        isConnected: data[key]?.isConnected || 'false',
+                        isNewItem: 'false',
+                      });
+                    }
                   } else {
                     db.ref(key).set({
                       isActive: 'true',
-                      setUser: device.createdBy.id,
+                      setUser: deviceCache.createdBy.id,
                       isResetUserIdEeprom: 'false',
                       isResetEeprom: 'false',
                       isTurnOn: 'false',
                       isConnected: data[key]?.isConnected || 'false',
+                      isNewItem: 'false',
                     });
                   }
-                } else {
-                  db.ref(key).set({
-                    isActive: 'true',
-                    setUser: deviceCache.createdBy.id,
-                    isResetUserIdEeprom: 'false',
-                    isResetEeprom: 'false',
-                    isTurnOn: 'false',
-                    isConnected: data[key]?.isConnected || 'false',
-                  });
                 }
               }
             }
           }
         }
-      }
-    });
+      });
+    }, 5000);
   }
 
   private createRealtime = (key: string) => {
     console.log('iscreate ref', key);
+    let isConnectedG = 'false';
 
     const db = admin.database();
 
-    const ref = db.ref(key);
+    const refTurnOnOff = db.ref(key + '/isTurnOn');
     const refConnect = db.ref(key + '/isConnected');
 
     refConnect.ref.on('value', async (snapshot) => {
       const isConnected = snapshot.val();
+
+      isConnectedG = isConnected;
 
       if (isConnected === 'true') {
         console.log('isConnect', key);
@@ -134,11 +148,11 @@ export class FirebaseConfig {
       }
     });
 
-    ref.ref.on('value', async (snapshot) => {
-      const data = snapshot.val();
+    refTurnOnOff.ref.on('value', async (snapshot) => {
+      const isTurnOn = snapshot.val();
 
-      if (data.isTurnOn === 'true' && data.isConnected === 'true') {
-        console.log('ok ok isTurnOn', data.isTurnOn);
+      if (isTurnOn === 'true' && isConnectedG === 'true') {
+        console.log('ok ok isTurnOn', isTurnOn);
 
         const deviceCache = await this.cacheManager.get<DeviceEsp>(key);
 
@@ -169,8 +183,8 @@ export class FirebaseConfig {
         }
       }
 
-      if (data.isTurnOn === 'false' && data.isConnected === 'true') {
-        console.log('ok ok isTurnOn2', data.isTurnOn);
+      if (isTurnOn === 'false' && isConnectedG === 'true') {
+        console.log('ok ok isTurnOn2', isTurnOn);
 
         const deviceCache = await this.cacheManager.get<DeviceEsp>(key);
 
