@@ -21,7 +21,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { CreateDeviceDto } from './dto/createDevice.dto';
 import { DeviceVm } from './models/device-vm.model';
-import { GetOperationId } from 'src/shared/utilities/get-operation-id';
+import * as admin from 'firebase-admin';
 import { GetUser } from '../shared/decorators/getUser.decorator';
 import { UserRole } from '../user/models/user-role.enum';
 import { Roles } from '../shared/decorators/roles.decorator';
@@ -30,6 +30,7 @@ import { DevicesService } from './devices.service';
 import { DeviceRepository } from './devices.repository';
 import { UserRepository } from '../user/user.repository';
 import { User } from 'src/user/models/user.model';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Controller('devices')
 @ApiTags('Devices')
@@ -40,6 +41,27 @@ export class DevicesController {
     private readonly userRepository: UserRepository,
     private readonly deviceRepository: DeviceRepository,
   ) {}
+
+  handleCreateDevice = async (deviceId: string) => {
+    const db = admin.database();
+
+    const ref = db.ref();
+    let data: any = {};
+
+    const snap = await ref.ref.get();
+
+    if (Object.entries(snap.val()).length > 0) {
+      data = { ...snap.val() };
+    }
+
+    data[deviceId] = {
+      isActive: false,
+    };
+
+    if (data && Object.entries(data).length > 0) {
+      const result = await ref.ref.set(data, () => {});
+    }
+  };
 
   @Get(':deviceId')
   @Roles(UserRole.Admin)
@@ -95,6 +117,8 @@ export class DevicesController {
         createdDevice,
         user,
       );
+
+      await this.handleCreateDevice(result.deviceId);
 
       return result;
     } catch (e) {
