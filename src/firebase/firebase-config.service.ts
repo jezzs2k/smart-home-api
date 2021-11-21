@@ -83,14 +83,14 @@ export class FirebaseConfig {
                       isTurnOn: 'false',
                       isConnected: data[key]?.isConnected || 'false',
                       isNewItem: 'false',
-                      m15: 0,
-                      h1: 0,
-                      h6: 0,
-                      h12: 0,
-                      h24: 0,
-                      w1: 0,
-                      m1: 0,
-                      totalTimeOn: 0,
+                      m15: '',
+                      h1: '',
+                      h6: '',
+                      h12: '',
+                      h24: '',
+                      w1: '',
+                      m1: '',
+                      totalTimeOn: '',
                       energy: ''
                     });
                   }
@@ -223,7 +223,7 @@ export class FirebaseConfig {
 
       const now = new Date().getTime();
 
-      console.log('now - startTime', startTime, now - startTime);\
+      console.log('now - startTime', startTime, now - startTime);
 
       const timeVal = now - startTime;
 
