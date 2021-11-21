@@ -223,33 +223,35 @@ export class FirebaseConfig {
 
       const now = new Date().getTime();
 
-      console.log('now - startTime', startTime, now - startTime);
+      console.log('now - startTime', startTime, now - startTime);\
 
-      if (now - startTime < 15 * 60 * 1000) {
+      const timeVal = now - startTime;
+
+      if (timeVal < 15 * 60 * 1000) {
         await ref15m.ref.set(energy);
       }
 
-      if (now - startTime < 60 * 60 * 1000) {
+      if (timeVal < 60 * 60 * 1000 && timeVal > 15 * 60 * 1000) {
         await ref1h.ref.set(energy);
       }
 
-      if (now - startTime < 6 * 60 * 60 * 1000) {
+      if (timeVal < 6 * 60 * 60 * 1000 && timeVal > 60 * 60 * 1000) {
         await ref6h.ref.set(energy);
       }
 
-      if (now - startTime < 12 * 60 * 60 * 1000) {
+      if (timeVal < 12 * 60 * 60 * 1000 && timeVal > 6 * 60 * 60 * 1000 ) {
         await ref12h.ref.set(energy);
       }
 
-      if (now - startTime < 24 * 60 * 60 * 1000) {
+      if (timeVal < 24 * 60 * 60 * 1000 && timeVal > 12 * 60 * 60 * 1000) {
         await ref24h.ref.set(energy);
       }
 
-      if (now - startTime > 7 * 24 * 60 * 60 * 1000) {
+      if (timeVal <  7 * 24 * 60 * 60 * 1000 && timeVal >  24 * 60 * 60 * 1000) {
         await ref1w.ref.set(energy);
       }
 
-      if (now - startTime > 30 * 24 * 60 * 60 * 1000) {
+      if (timeVal < 30 * 24 * 60 * 60 * 1000 && timeVal >  7 * 24 * 60 * 60 * 1000) {
         await ref1M.ref.set(energy);
       }
     });
