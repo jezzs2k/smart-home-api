@@ -83,6 +83,15 @@ export class FirebaseConfig {
                       isTurnOn: 'false',
                       isConnected: data[key]?.isConnected || 'false',
                       isNewItem: 'false',
+                      m15: 0,
+                      h1: 0,
+                      h6: 0,
+                      h12: 0,
+                      h24: 0,
+                      w1: 0,
+                      m1: 0,
+                      totalTimeOn: 0,
+                      energy: ''
                     });
                   }
                 }
@@ -96,11 +105,21 @@ export class FirebaseConfig {
 
   private createRealtime = (key: string) => {
     let isConnectedG = 'false';
+    let startTime = 0;
 
     const db = admin.database();
 
     const refTurnOnOff = db.ref(key + '/isTurnOn');
     const refConnect = db.ref(key + '/isConnected');
+    const refEnergy = db.ref(key + '/energy');
+    const refStartTime = db.ref(key + '/startTime');
+    const ref15m = db.ref(key + '/m15');
+    const ref1h = db.ref(key + '/h1');
+    const ref6h = db.ref(key + '/h6');
+    const ref12h = db.ref(key + '/h12');
+    const ref24h = db.ref(key + '/h24');
+    const ref1w = db.ref(key + '/w1');
+    const ref1M = db.ref(key + '/m1');
 
     refConnect.ref.on('value', async (snapshot) => {
       const isConnected = snapshot.val();
@@ -186,6 +205,58 @@ export class FirebaseConfig {
           });
         }
       }
+    });
+
+    refEnergy.ref.on('value', async (snapshot) => {
+      const energy = snapshot.val();
+
+      let valueEnrgy: any = {};
+      energy.split(',').forEach((item: string, index: number) => {
+        if (index === 0) {
+          valueEnrgy[item.split(':')[0].split('{')[1]] = item.split(':')[1];
+        }
+
+        if (item !== '}') {
+          valueEnrgy[item.split(':')[0]] = item.split(':')[1];
+        }
+      });
+
+      const now = new Date().getTime();
+
+      if (now - startTime > 15 * 60 * 1000 && now - startTime < 17 * 60 * 1000) {
+        await ref15m.ref.set(energy);
+      };
+
+      if (now - startTime > 60 * 60 * 1000 && now - startTime < 62 * 60 * 1000) {
+        await ref1h.ref.set(energy);
+      };
+
+      if (now - startTime > 6 * 60 * 60 * 1000 && now - startTime < (6 * 60 * 60 * 1000 + 2 * 60 * 1000)) {
+        await ref6h.ref.set(energy);
+      };
+
+      if (now - startTime > 12 * 60 * 60 * 1000 && now - startTime < (12 * 60 * 60 * 1000 + 2 * 60 * 1000)) {
+        await ref12h.ref.set(energy);
+      };
+
+      if (now - startTime > 24 * 60 * 60 * 1000 && now - startTime < (24 * 60 * 60 * 1000 + 2 * 60 * 1000)) {
+        await ref24h.ref.set(energy);
+      };
+
+      if (now - startTime > 7 * 24 * 60 * 60 * 1000 && now - startTime < (7 * 24 * 60 * 60 * 1000 + 2 * 60 * 1000)) {
+        await ref1w.ref.set(energy);
+      };
+
+      if (now - startTime > 30 * 24 * 60 * 60 * 1000 && now - startTime < (30 * 24 * 60 * 60 * 1000 + 2 * 60 * 1000)) {
+        await ref1M.ref.set(energy);
+      };
+
+    });
+
+    refStartTime.ref.on('value', async (snapshot) => {
+      const val = snapshot.val();
+
+      startTime = val;
     });
   };
 }

@@ -1,5 +1,4 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
-import { Cache } from 'cache-manager';
+import { Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
 import { RedisCacheService } from './redis-cache/redis-cache.service';
 @Injectable()
