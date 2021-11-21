@@ -208,6 +208,9 @@ export class FirebaseConfig {
             deviceCache,
           );
 
+          await refTotalTimeOn.ref.set(
+            totalTimeOn + new Date().getTime() - startTime,
+          );
           await this.cacheManager.set<DeviceEsp>(key, deviceUpdated, {
             ttl: 900,
           });
