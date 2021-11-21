@@ -225,52 +225,31 @@ export class FirebaseConfig {
 
       console.log('now - startTime', startTime, now - startTime);
 
-      if (
-        now - startTime > 15 * 60 * 1000 &&
-        now - startTime < 17 * 60 * 1000
-      ) {
+      if (now - startTime < 15 * 60 * 1000) {
         await ref15m.ref.set(energy);
       }
 
-      if (
-        now - startTime > 60 * 60 * 1000 &&
-        now - startTime < 62 * 60 * 1000
-      ) {
+      if (now - startTime < 60 * 60 * 1000) {
         await ref1h.ref.set(energy);
       }
 
-      if (
-        now - startTime > 6 * 60 * 60 * 1000 &&
-        now - startTime < 6 * 60 * 60 * 1000 + 2 * 60 * 1000
-      ) {
+      if (now - startTime < 6 * 60 * 60 * 1000) {
         await ref6h.ref.set(energy);
       }
 
-      if (
-        now - startTime > 12 * 60 * 60 * 1000 &&
-        now - startTime < 12 * 60 * 60 * 1000 + 2 * 60 * 1000
-      ) {
+      if (now - startTime < 12 * 60 * 60 * 1000) {
         await ref12h.ref.set(energy);
       }
 
-      if (
-        now - startTime > 24 * 60 * 60 * 1000 &&
-        now - startTime < 24 * 60 * 60 * 1000 + 2 * 60 * 1000
-      ) {
+      if (now - startTime < 24 * 60 * 60 * 1000) {
         await ref24h.ref.set(energy);
       }
 
-      if (
-        now - startTime > 7 * 24 * 60 * 60 * 1000 &&
-        now - startTime < 7 * 24 * 60 * 60 * 1000 + 2 * 60 * 1000
-      ) {
+      if (now - startTime > 7 * 24 * 60 * 60 * 1000) {
         await ref1w.ref.set(energy);
       }
 
-      if (
-        now - startTime > 30 * 24 * 60 * 60 * 1000 &&
-        now - startTime < 30 * 24 * 60 * 60 * 1000 + 2 * 60 * 1000
-      ) {
+      if (now - startTime > 30 * 24 * 60 * 60 * 1000) {
         await ref1M.ref.set(energy);
       }
     });
