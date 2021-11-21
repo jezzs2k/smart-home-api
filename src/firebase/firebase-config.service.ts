@@ -106,6 +106,7 @@ export class FirebaseConfig {
   private createRealtime = (key: string) => {
     let isConnectedG = 'false';
     let startTime = 0;
+    let totalTimeOn = 0;
 
     const db = admin.database();
 
@@ -113,6 +114,7 @@ export class FirebaseConfig {
     const refConnect = db.ref(key + '/isConnected');
     const refEnergy = db.ref(key + '/energy');
     const refStartTime = db.ref(key + '/startTime');
+    const refTotalTimeOn = db.ref(key + '/totalTimeOn');
     const ref15m = db.ref(key + '/m15');
     const ref1h = db.ref(key + '/h1');
     const ref6h = db.ref(key + '/h6');
@@ -223,9 +225,7 @@ export class FirebaseConfig {
 
       const now = new Date().getTime();
 
-      console.log('now - startTime', startTime, now - startTime);
-
-      const timeVal = now - startTime;
+      const timeVal = now - startTime + totalTimeOn;
 
       if (timeVal < 15 * 60 * 1000) {
         await ref15m.ref.set(energy);
@@ -239,7 +239,7 @@ export class FirebaseConfig {
         await ref6h.ref.set(energy);
       }
 
-      if (timeVal < 12 * 60 * 60 * 1000 && timeVal > 6 * 60 * 60 * 1000 ) {
+      if (timeVal < 12 * 60 * 60 * 1000 && timeVal > 6 * 60 * 60 * 1000) {
         await ref12h.ref.set(energy);
       }
 
@@ -247,11 +247,14 @@ export class FirebaseConfig {
         await ref24h.ref.set(energy);
       }
 
-      if (timeVal <  7 * 24 * 60 * 60 * 1000 && timeVal >  24 * 60 * 60 * 1000) {
+      if (timeVal < 7 * 24 * 60 * 60 * 1000 && timeVal > 24 * 60 * 60 * 1000) {
         await ref1w.ref.set(energy);
       }
 
-      if (timeVal < 30 * 24 * 60 * 60 * 1000 && timeVal >  7 * 24 * 60 * 60 * 1000) {
+      if (
+        timeVal < 30 * 24 * 60 * 60 * 1000 &&
+        timeVal > 7 * 24 * 60 * 60 * 1000
+      ) {
         await ref1M.ref.set(energy);
       }
     });
@@ -259,9 +262,12 @@ export class FirebaseConfig {
     refStartTime.ref.on('value', async (snapshot) => {
       const val = snapshot.val();
 
-      console.log(startTime);
-
       startTime = val;
+    });
+
+    refTotalTimeOn.ref.on('value', async (snapshot) => {
+      const val = snapshot.val();
+      totalTimeOn = val;
     });
   };
 }
