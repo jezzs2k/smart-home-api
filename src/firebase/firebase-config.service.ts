@@ -90,8 +90,9 @@ export class FirebaseConfig {
                       h24: '',
                       w1: '',
                       m1: '',
-                      totalTimeOn: '',
-                      energy: ''
+                      totalTimeOn: 0,
+                      energy: '',
+                      startTime: 0,
                     });
                   }
                 }
@@ -151,6 +152,7 @@ export class FirebaseConfig {
       if (isTurnOn === 'true' && isConnectedG === 'true') {
         const deviceCache = await this.cacheManager.get<DeviceEsp>(key);
 
+
         if (_.isNull(deviceCache)) {
           const device = await this._deviceService.findOne({
             deviceId: key,
@@ -162,6 +164,8 @@ export class FirebaseConfig {
             device,
           );
 
+          await refStartTime.ref.set(new Date().getTime());
+
           await this.cacheManager.set<DeviceEsp>(key, deviceUpdated, {
             ttl: 900,
           });
@@ -172,6 +176,7 @@ export class FirebaseConfig {
             deviceCache,
           );
 
+          await refStartTime.ref.set(new Date().getTime());
           await this.cacheManager.set<DeviceEsp>(key, deviceUpdated, {
             ttl: 900,
           });
@@ -192,6 +197,7 @@ export class FirebaseConfig {
             device,
           );
 
+          await refTotalTimeOn.ref.set(totalTimeOn + (new Date().getTime()) - startTime);
           await this.cacheManager.set<DeviceEsp>(key, deviceUpdated, {
             ttl: 900,
           });
