@@ -129,18 +129,14 @@ export class FirebaseConfig {
 
       isConnectedG = isConnected;
 
-      if (isConnected === 'true') {
-        const device = await this._deviceService.findOne({
-          deviceId: key,
-        });
+      const device = await this._deviceService.findOne({
+        deviceId: key,
+      });
 
+      if (isConnected === 'true' && device) {
         device.isConnected = true;
         await this._deviceService.updateById(device.id, device);
-      } else {
-        const device = await this._deviceService.findOne({
-          deviceId: key,
-        });
-
+      } else if (device) {
         device.isConnected = false;
         await this._deviceService.updateById(device.id, device);
       }

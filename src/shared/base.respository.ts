@@ -103,9 +103,12 @@ export abstract class BaseRepository<TModel extends BaseModel> {
     }
   }
 
-  deleteOne(options?: QueryOptions): QueryItem<TModel> {
+  deleteOne(
+    filter: FilterQuery<DocumentType<TModel>> = {},
+    options?: QueryOptions,
+  ): QueryItem<TModel> {
     return this.model
-      .findOneAndDelete()
+      .findOneAndDelete(filter)
       .setOptions(BaseRepository.getQueryOptions(options));
   }
 
