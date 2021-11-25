@@ -36,8 +36,9 @@ export class AppModule {
     AppModule.port = AppModule.normalizePort(
       _configurationsService.get(Configuration.PORT),
     );
-    AppModule.host =
-      _configurationsService.get(Configuration.HOST) || 'http://localhost';
+    AppModule.host = _configurationsService.isDevelopment
+      ? 'http://localhost'
+      : _configurationsService.get(Configuration.HOST);
     AppModule.isDev = _configurationsService.isDevelopment;
   }
 

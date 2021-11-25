@@ -1,5 +1,5 @@
 export default {
-  HOST: 'http://localhost',
+  HOST: 'http://invoice-maker.tech',
   PORT: 8081,
   MONGO_URI:
     'mongodb+srv://admin:admin@cluster0.igh9e.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
