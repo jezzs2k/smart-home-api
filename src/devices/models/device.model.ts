@@ -30,4 +30,9 @@ export class DeviceEsp extends BaseModel {
     default: false,
   })
   isTurnOn: boolean;
+
+  @prop({
+    default: 0,
+  })
+  icon: number;
 }

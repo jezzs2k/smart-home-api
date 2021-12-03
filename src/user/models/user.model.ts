@@ -7,9 +7,14 @@ import { DeviceEsp } from '../../devices/models/device.model';
 
 export interface WorkerType {
   isRunning: boolean;
-  name: string;
-  seconds: number;
+  name?: string;
+  name1?: string;
+  name2?: string;
+  seconds?: number;
   createdAt: Date;
+  isRealLifeTime: boolean;
+  dateOff?: string;
+  dateOn?: string;
 }
 @useMongoosePlugin()
 export class User extends BaseModel {

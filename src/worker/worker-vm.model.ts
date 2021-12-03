@@ -7,3 +7,14 @@ export class CreateWorkerVm {
   @ApiProperty()
   seconds: number;
 }
+
+export class CreateWorkerRealLifeTimeOnOffVm {
+  @ApiProperty()
+  deviceId: string;
+
+  @ApiProperty()
+  dateOn: string;
+
+  @ApiProperty()
+  dateOff: string;
+}

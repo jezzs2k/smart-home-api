@@ -11,4 +11,7 @@ export class CreateDeviceDto {
 
   @ApiProperty({ default: false })
   isConnected: boolean;
+
+  @ApiProperty({ default: 0 })
+  icon: number;
 }

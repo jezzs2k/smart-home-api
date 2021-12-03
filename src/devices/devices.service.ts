@@ -65,7 +65,7 @@ export class DevicesService extends BaseService<DeviceEsp> {
     createDeviceDto: CreateDeviceDto,
     user: User,
   ): Promise<DeviceVm> {
-    const { deviceId, deviceName } = createDeviceDto;
+    const { deviceId, deviceName, icon } = createDeviceDto;
 
     const deviceType = createDeviceDto?.deviceType;
     const isConnected = !!createDeviceDto?.isConnected;
@@ -76,6 +76,7 @@ export class DevicesService extends BaseService<DeviceEsp> {
     newDeviceEsp.deviceName = deviceName;
     newDeviceEsp.isConnected = isConnected;
     newDeviceEsp.createdBy = user;
+    newDeviceEsp.icon = icon;
 
     if (deviceType) newDeviceEsp.deviceType = deviceType;
 
@@ -145,11 +146,13 @@ export class DevicesService extends BaseService<DeviceEsp> {
       const deviceType = deviceDto.deviceType;
       const isConnected = deviceDto.isConnected;
       const isTurnOn = deviceDto.isTurnOn;
+      const icon = deviceDto.icon;
 
       if (deviceName) device.deviceName = deviceName;
       if (deviceType) device.deviceType = deviceType;
       if (isConnected != null) device.isConnected = isConnected;
       if (isTurnOn != null) device.isTurnOn = isTurnOn;
+      if (icon != null) device.icon = icon;
 
       return await this._repository.updateById(device.id, device);
     } catch (e) {

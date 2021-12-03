@@ -17,4 +17,7 @@ export class DeviceVm extends BaseModelVm {
 
   @ApiProperty()
   isTurnOn?: boolean;
+
+  @ApiProperty()
+  icon?: number;
 }

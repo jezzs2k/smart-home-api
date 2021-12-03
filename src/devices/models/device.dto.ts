@@ -12,4 +12,7 @@ export class DeviceUpdateEspVm {
 
   @ApiProperty({ default: false })
   isTurnOn?: boolean;
+
+  @ApiProperty()
+  icon?: number;
 }
